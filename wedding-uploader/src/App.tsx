@@ -73,6 +73,7 @@ function App() {
     <>
       {/* Animated snowflakes */}
       <div className="snowflakes" aria-hidden="true">
+        {/* Original 10 snowflakes */}
         <div className="snowflake">❄</div>
         <div className="snowflake">❅</div>
         <div className="snowflake">❆</div>
@@ -83,11 +84,29 @@ function App() {
         <div className="snowflake">❅</div>
         <div className="snowflake">❆</div>
         <div className="snowflake">❄</div>
+        {/* Original 5 stars */}
         <div className="snowflake star">✦</div>
         <div className="snowflake star">✧</div>
         <div className="snowflake star">✦</div>
         <div className="snowflake star">✧</div>
         <div className="snowflake star">✦</div>
+        {/* Additional 10 snowflakes */}
+        <div className="snowflake">❅</div>
+        <div className="snowflake">❆</div>
+        <div className="snowflake">❄</div>
+        <div className="snowflake">❅</div>
+        <div className="snowflake">❆</div>
+        <div className="snowflake">❄</div>
+        <div className="snowflake">❅</div>
+        <div className="snowflake">❆</div>
+        <div className="snowflake">❄</div>
+        <div className="snowflake">❅</div>
+        {/* Additional 5 stars */}
+        <div className="snowflake star">✧</div>
+        <div className="snowflake star">✦</div>
+        <div className="snowflake star">✧</div>
+        <div className="snowflake star">✦</div>
+        <div className="snowflake star">✧</div>
       </div>
       
       {/* Corner glow decoration */}

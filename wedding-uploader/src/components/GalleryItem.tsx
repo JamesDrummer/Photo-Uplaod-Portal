@@ -100,6 +100,12 @@ export function GalleryItem({ upload, onFileMissing }: GalleryItemProps) {
                 className="absolute inset-0 object-cover w-full h-full"
                 muted
                 playsInline
+                preload="metadata"
+                poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23374151'/%3E%3Cstop offset='100%25' style='stop-color:%231f2937'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='300' height='300'/%3E%3C/svg%3E"
+                onLoadedMetadata={(e) => {
+                  // Seek slightly into the video to trigger frame rendering on mobile
+                  e.currentTarget.currentTime = 0.1;
+                }}
                 onError={async () => {
                   console.error('Failed to load video:', thumbnailUrl, upload);
                   setHasError(true);

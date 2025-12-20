@@ -51,7 +51,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
       <div className="text-center">
         <h1 className="text-5xl text-text-dark font-display">Family Gallery</h1>
         <p className="mt-2 text-sm text-text-light">
-          {uploads.length} {uploads.length === 1 ? 'photo' : 'photos'} shared
+          {uploads.length} {uploads.length === 1 ? 'memory' : 'memories'} shared
         </p>
       </div>
 
