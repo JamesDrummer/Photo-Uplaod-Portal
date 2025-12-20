@@ -12,17 +12,12 @@
 
 html {
   height: 100%;
+  background-color: #FFFEFA; /* Ensure base color matches body to avoid white gaps */
 }
 
 body {
   @apply text-text-light font-sans;
-  background: 
-    /* Subtle radial gradient for depth */
-    radial-gradient(ellipse at top, rgba(255, 250, 245, 1) 0%, rgba(240, 248, 255, 0.8) 100%),
-    /* Base warm white */
-    #FFFEFA;
-  min-height: 100%;
-  height: auto;
+  min-height: 100vh;
   position: relative;
   overflow-x: hidden;
 }
@@ -30,13 +25,14 @@ body {
 /* Christmas pattern overlay */
 body::before {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  min-height: 100%;
+  height: 100vh;
   pointer-events: none;
   z-index: 0;
+  background-color: #FFFEFA;
   background-image: 
     /* Snowflakes pattern - red tint */
     radial-gradient(circle at 20% 20%, rgba(196, 30, 58, 0.06) 3px, transparent 3px),
@@ -52,7 +48,9 @@ body::before {
     radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
     radial-gradient(circle at 30% 90%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
     radial-gradient(circle at 70% 15%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 25% 75%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px);
+    radial-gradient(circle at 25% 75%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px),
+    /* Subtle radial gradient for depth */
+    radial-gradient(ellipse at top, rgba(255, 250, 245, 1) 0%, rgba(240, 248, 255, 0.8) 100%);
   background-size: 
     120px 120px,
     180px 180px,
@@ -65,7 +63,8 @@ body::before {
     70px 70px,
     85px 85px,
     130px 130px,
-    95px 95px;
+    95px 95px,
+    100% 100%;
   opacity: 1;
 }
 
