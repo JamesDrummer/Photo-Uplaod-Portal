@@ -10,6 +10,10 @@
   font-display: swap;
 }
 
+html {
+  height: 100%;
+}
+
 body {
   @apply text-text-light font-sans;
   background: 
@@ -17,7 +21,8 @@ body {
     radial-gradient(ellipse at top, rgba(255, 250, 245, 1) 0%, rgba(240, 248, 255, 0.8) 100%),
     /* Base warm white */
     #FFFEFA;
-  min-height: 100vh;
+  min-height: 100%;
+  height: auto;
   position: relative;
   overflow-x: hidden;
 }
@@ -25,11 +30,11 @@ body {
 /* Christmas pattern overlay */
 body::before {
   content: '';
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   pointer-events: none;
   z-index: 0;
   background-image: 
