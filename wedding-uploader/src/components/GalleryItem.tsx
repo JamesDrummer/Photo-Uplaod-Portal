@@ -28,6 +28,9 @@ export function GalleryItem({ upload, onFileMissing }: GalleryItemProps) {
   // Check if the file is a video
   const isVideo = upload.file_name.match(/\.(mp4|mov|mkv|webm)$/i);
   
+  // Check if the file is a GIF (needs special handling to preserve animation)
+  const isGif = upload.file_name.match(/\.gif$/i);
+  
   // Check if the file is HEIC (which browsers can't display directly)
   const isHeic = upload.file_name.match(/\.heic$/i);
 
@@ -38,10 +41,13 @@ export function GalleryItem({ upload, onFileMissing }: GalleryItemProps) {
 
   const fullUrl = fullData?.publicUrl || '';
 
-  // For images, generate a thumbnail. For videos, use the video itself
+  // For images, generate a thumbnail. For videos/GIFs, use the file itself
   const getThumbnailUrl = () => {
     if (isVideo) {
       return fullUrl; // Return the video URL directly
+    } else if (isGif) {
+      // GIFs should use the original URL to preserve animation
+      return fullUrl;
     } else {
       // Use Supabase image transformation for photo thumbnails
       const { data: thumbData } = supabase.storage

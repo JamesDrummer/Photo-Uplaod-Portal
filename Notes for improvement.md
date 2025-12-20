@@ -5,3 +5,5 @@
 - Do a check for vulnrubilities and dependenciy up-to-dateness
 - Add Secure Session Persistence using XOR
 - Update gallery so that it detects missing files and removes them from the gallery.
+- Fix Mobile Display Tumbnails on mobile
+- Fix GIF display

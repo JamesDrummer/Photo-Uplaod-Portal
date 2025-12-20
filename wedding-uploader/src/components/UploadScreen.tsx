@@ -46,6 +46,12 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
     return extension === 'heic' || extension === 'heif';
   };
 
+  // Helper function to check if a file is a GIF (should not be converted)
+  const isGifFile = (file: File): boolean => {
+    const extension = file.name.toLowerCase().split('.').pop();
+    return extension === 'gif' || file.type === 'image/gif';
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles(e.target.files);
     setSuccessMessage('');
@@ -71,15 +77,17 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
     setSuccessMessage('');
 
     try {
-      // Separate images and videos
+      // Separate images, GIFs, and videos
       const fileArray = Array.from(files);
-      const images = fileArray.filter(f => isImageFile(f));
+      const gifs = fileArray.filter(f => isGifFile(f));
+      const images = fileArray.filter(f => isImageFile(f) && !isGifFile(f));
       const videos = fileArray.filter(f => f.type.startsWith('video/'));
       
       // Log file detection for debugging
       console.log('Files detected:', {
         total: fileArray.length,
         images: images.map(f => ({ name: f.name, type: f.type, size: f.size })),
+        gifs: gifs.map(f => ({ name: f.name, type: f.type, size: f.size })),
         videos: videos.map(f => ({ name: f.name, type: f.type, size: f.size }))
       });
       
@@ -119,8 +127,8 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         })
       );
 
-      // Combine converted images with original videos
-      const filesToUpload = [...convertedImages, ...videos];
+      // Combine converted images with original GIFs and videos (GIFs keep their animation)
+      const filesToUpload = [...convertedImages, ...gifs, ...videos];
       
       setSuccessMessage(`Uploading ${filesToUpload.length} file(s)...`);
 
