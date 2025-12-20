@@ -3,17 +3,17 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      // Match the RSVP page aesthetic
+      // Christmas theme colors
       colors: {
-        'background': '#1a1a1a',
-        'card': '#2b2b2b',
-        'primary': '#7F00FF', // Bright purple accent
-        'text-light': '#CCCCCC', // Body text
-        'text-dark': '#F5F5F5', // Headings
+        'background': '#FFFEFA', // Warm white/snow
+        'card': '#FFFFFF', // White cards with shadow
+        'primary': '#C41E3A', // Christmas red
+        'text-light': '#4A4A4A', // Dark gray for body text
+        'text-dark': '#1A1A1A', // Near black for headings
       },
       fontFamily: {
         'sans': ['Lato', 'sans-serif'],
-        'display': ['MedievalSharp', 'cursive'],
+        'display': ['Christmas', 'MedievalSharp', 'cursive'],
       },
     },
   },

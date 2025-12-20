@@ -164,13 +164,27 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
                   e.currentTarget.style.display = 'none';
                   const fallbackDiv = document.createElement('div');
                   fallbackDiv.className = 'max-w-full max-h-[85vh] rounded-lg shadow-2xl bg-gray-800 flex items-center justify-center p-8';
-                  fallbackDiv.innerHTML = `
-                    <div class="text-center text-white">
-                      <p class="text-lg mb-2">Image could not be displayed</p>
-                      <p class="text-sm text-gray-400">${filename}</p>
-                      <p class="text-xs text-gray-500 mt-2">HEIC format may not be supported</p>
-                    </div>
-                  `;
+                  
+                  // Create elements safely to prevent XSS
+                  const container = document.createElement('div');
+                  container.className = 'text-center text-white';
+                  
+                  const title = document.createElement('p');
+                  title.className = 'text-lg mb-2';
+                  title.textContent = 'Image could not be displayed';
+                  
+                  const filenamePara = document.createElement('p');
+                  filenamePara.className = 'text-sm text-gray-400';
+                  filenamePara.textContent = filename; // Safe: textContent escapes HTML
+                  
+                  const hint = document.createElement('p');
+                  hint.className = 'text-xs text-gray-500 mt-2';
+                  hint.textContent = 'HEIC format may not be supported';
+                  
+                  container.appendChild(title);
+                  container.appendChild(filenamePara);
+                  container.appendChild(hint);
+                  fallbackDiv.appendChild(container);
                   e.currentTarget.parentNode?.appendChild(fallbackDiv);
                 };
                 

@@ -10,14 +10,18 @@ export type Upload = {
 
 interface GalleryItemProps {
   upload: Upload;
+  onFileMissing?: (uploadId: number) => void;
 }
 
-export function GalleryItem({ upload }: GalleryItemProps) {
+export function GalleryItem({ upload, onFileMissing }: GalleryItemProps) {
   const [showLightbox, setShowLightbox] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   // Safety check
-  if (!upload.file_path) {
-    console.warn('Upload missing file_path:', upload);
+  if (!upload.file_path || hasError) {
+    if (!upload.file_path) {
+      console.warn('Upload missing file_path:', upload);
+    }
     return null;
   }
 
@@ -96,6 +100,21 @@ export function GalleryItem({ upload }: GalleryItemProps) {
                 className="absolute inset-0 object-cover w-full h-full"
                 muted
                 playsInline
+                onError={async (e) => {
+                  console.error('Failed to load video:', thumbnailUrl, upload);
+                  setHasError(true);
+                  // Notify parent that this file is missing
+                  if (onFileMissing) {
+                    onFileMissing(upload.id);
+                  }
+                  // Optionally delete the orphaned database record
+                  try {
+                    await supabase.from('uploads').delete().eq('id', upload.id);
+                    console.log('Deleted orphaned record:', upload.id);
+                  } catch (deleteError) {
+                    console.error('Failed to delete orphaned record:', deleteError);
+                  }
+                }}
               />
               {/* Play button overlay */}
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
@@ -113,9 +132,20 @@ export function GalleryItem({ upload }: GalleryItemProps) {
               src={thumbnailUrl}
               alt={upload.file_name}
               className="absolute inset-0 object-cover w-full h-full"
-              onError={(e) => {
-                console.error('Failed to load thumbnail:', thumbnailUrl);
-                e.currentTarget.style.display = 'none';
+              onError={async (e) => {
+                console.error('Failed to load thumbnail:', thumbnailUrl, upload);
+                setHasError(true);
+                // Notify parent that this file is missing
+                if (onFileMissing) {
+                  onFileMissing(upload.id);
+                }
+                // Optionally delete the orphaned database record
+                try {
+                  await supabase.from('uploads').delete().eq('id', upload.id);
+                  console.log('Deleted orphaned record:', upload.id);
+                } catch (deleteError) {
+                  console.error('Failed to delete orphaned record:', deleteError);
+                }
               }}
             />
           )}

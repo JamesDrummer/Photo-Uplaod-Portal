@@ -2,7 +2,166 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Christmas';
+  src: url('/fonts/Christmas.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
-  @apply bg-background text-text-light font-sans;
+  @apply text-text-light font-sans;
+  background: 
+    /* Subtle radial gradient for depth */
+    radial-gradient(ellipse at top, rgba(255, 250, 245, 1) 0%, rgba(240, 248, 255, 0.8) 100%),
+    /* Base warm white */
+    #FFFEFA;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Christmas pattern overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    /* Snowflakes pattern - red tint */
+    radial-gradient(circle at 20% 20%, rgba(196, 30, 58, 0.06) 3px, transparent 3px),
+    radial-gradient(circle at 80% 30%, rgba(196, 30, 58, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 40% 70%, rgba(196, 30, 58, 0.06) 3px, transparent 3px),
+    radial-gradient(circle at 60% 50%, rgba(196, 30, 58, 0.05) 2px, transparent 2px),
+    /* Green holly dots */
+    radial-gradient(circle at 15% 45%, rgba(34, 139, 34, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 85% 55%, rgba(34, 139, 34, 0.05) 2px, transparent 2px),
+    /* Gold stars */
+    radial-gradient(circle at 10% 60%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
+    radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
+    radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
+    radial-gradient(circle at 30% 90%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
+    radial-gradient(circle at 70% 15%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 25% 75%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px);
+  background-size: 
+    120px 120px,
+    180px 180px,
+    150px 150px,
+    200px 200px,
+    160px 160px,
+    140px 140px,
+    90px 90px,
+    110px 110px,
+    70px 70px,
+    85px 85px,
+    130px 130px,
+    95px 95px;
+  opacity: 1;
+}
+
+/* Animated snowflakes container */
+.snowflakes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Individual snowflake */
+.snowflake {
+  position: absolute;
+  top: -20px;
+  color: rgba(196, 30, 58, 0.25);
+  font-size: 1.2rem;
+  animation: snowfall linear infinite;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+}
+
+.snowflake:nth-child(1) { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 0.8rem; }
+.snowflake:nth-child(2) { left: 15%; animation-duration: 12s; animation-delay: 2s; font-size: 1.2rem; }
+.snowflake:nth-child(3) { left: 25%; animation-duration: 18s; animation-delay: 4s; font-size: 0.9rem; }
+.snowflake:nth-child(4) { left: 35%; animation-duration: 14s; animation-delay: 1s; font-size: 1rem; }
+.snowflake:nth-child(5) { left: 45%; animation-duration: 16s; animation-delay: 3s; font-size: 0.7rem; }
+.snowflake:nth-child(6) { left: 55%; animation-duration: 13s; animation-delay: 5s; font-size: 1.1rem; }
+.snowflake:nth-child(7) { left: 65%; animation-duration: 17s; animation-delay: 2.5s; font-size: 0.85rem; }
+.snowflake:nth-child(8) { left: 75%; animation-duration: 11s; animation-delay: 1.5s; font-size: 1rem; }
+.snowflake:nth-child(9) { left: 85%; animation-duration: 19s; animation-delay: 4.5s; font-size: 0.75rem; }
+.snowflake:nth-child(10) { left: 95%; animation-duration: 14s; animation-delay: 0.5s; font-size: 0.95rem; }
+
+/* Second layer of snowflakes - gold stars */
+.snowflake.star {
+  color: rgba(212, 175, 55, 0.35);
+  font-size: 0.8rem;
+  text-shadow: 0 0 4px rgba(212, 175, 55, 0.3);
+}
+
+.snowflake.star:nth-child(11) { left: 10%; animation-duration: 20s; animation-delay: 1s; }
+.snowflake.star:nth-child(12) { left: 30%; animation-duration: 22s; animation-delay: 3s; }
+.snowflake.star:nth-child(13) { left: 50%; animation-duration: 18s; animation-delay: 5s; }
+.snowflake.star:nth-child(14) { left: 70%; animation-duration: 24s; animation-delay: 2s; }
+.snowflake.star:nth-child(15) { left: 90%; animation-duration: 21s; animation-delay: 4s; }
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Corner decorations */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at 100% 0%, rgba(196, 30, 58, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Bottom left corner glow */
+.corner-glow {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle at 0% 100%, rgba(34, 139, 34, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content stays above background effects */
+#root {
+  position: relative;
+  z-index: 10;
+}
+
+/* Ensure cards have proper layering above snowflakes */
+.bg-card {
+  position: relative;
+  z-index: 20;
+  background-color: #FFFFFF;
 }
 

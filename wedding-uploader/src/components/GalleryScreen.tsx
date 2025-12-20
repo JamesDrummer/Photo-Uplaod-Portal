@@ -11,6 +11,11 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Remove upload from list when file is missing
+  const handleFileMissing = (uploadId: number) => {
+    setUploads(prevUploads => prevUploads.filter(upload => upload.id !== uploadId));
+  };
+
   useEffect(() => {
     const fetchUploads = async () => {
       setIsLoading(true);
@@ -44,7 +49,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
   return (
     <div className="w-full max-w-4xl p-8 space-y-6 rounded-lg shadow-lg bg-card">
       <div className="text-center">
-        <h1 className="text-5xl text-white font-display">Guest Gallery</h1>
+        <h1 className="text-5xl text-text-dark font-display">Family Gallery</h1>
         <p className="mt-2 text-sm text-text-light">
           {uploads.length} {uploads.length === 1 ? 'photo' : 'photos'} shared
         </p>
@@ -53,7 +58,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
       {/* Floating Upload Button */}
       <button
         onClick={onShowUpload}
-        className="fixed p-4 text-white transition-all duration-300 rounded-full shadow-lg bottom-8 right-8 bg-primary hover:bg-purple-700 hover:scale-110 touch-manipulation z-[60]"
+        className="fixed p-4 text-white transition-all duration-300 rounded-full shadow-lg bottom-8 right-8 bg-primary hover:bg-red-800 hover:scale-110 touch-manipulation z-40"
         title="Upload Photos"
         style={{ touchAction: 'manipulation' }}
       >
@@ -95,7 +100,11 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
       {!isLoading && !error && uploads.length > 0 && (
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
           {uploads.map((upload) => (
-            <GalleryItem key={upload.id} upload={upload} />
+            <GalleryItem 
+              key={upload.id} 
+              upload={upload} 
+              onFileMissing={handleFileMissing}
+            />
           ))}
         </div>
       )}
