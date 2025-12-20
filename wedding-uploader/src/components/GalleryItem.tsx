@@ -100,7 +100,7 @@ export function GalleryItem({ upload, onFileMissing }: GalleryItemProps) {
                 className="absolute inset-0 object-cover w-full h-full"
                 muted
                 playsInline
-                onError={async (e) => {
+                onError={async () => {
                   console.error('Failed to load video:', thumbnailUrl, upload);
                   setHasError(true);
                   // Notify parent that this file is missing
@@ -132,7 +132,7 @@ export function GalleryItem({ upload, onFileMissing }: GalleryItemProps) {
               src={thumbnailUrl}
               alt={upload.file_name}
               className="absolute inset-0 object-cover w-full h-full"
-              onError={async (e) => {
+              onError={async () => {
                 console.error('Failed to load thumbnail:', thumbnailUrl, upload);
                 setHasError(true);
                 // Notify parent that this file is missing
