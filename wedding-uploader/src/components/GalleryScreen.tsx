@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { GalleryItem, Upload } from './GalleryItem';
 
@@ -9,12 +9,81 @@ interface GalleryScreenProps {
 export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const verificationRan = useRef(false);
 
   // Remove upload from list when file is missing
   const handleFileMissing = (uploadId: number) => {
     setUploads(prevUploads => prevUploads.filter(upload => upload.id !== uploadId));
   };
+
+  // Verify if a file exists in storage using HEAD request
+  const verifyFileExists = useCallback(async (filePath: string): Promise<boolean> => {
+    const { data } = supabase.storage
+      .from('guest-media')
+      .getPublicUrl(filePath);
+    
+    try {
+      const response = await fetch(data.publicUrl, { 
+        method: 'HEAD',
+        cache: 'no-store' // Bypass browser cache
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Background verification to clean up orphaned records
+  const verifyAndCleanup = useCallback(async (uploadsToVerify: Upload[]) => {
+    if (uploadsToVerify.length === 0) return;
+    
+    setIsVerifying(true);
+    console.log(`Verifying ${uploadsToVerify.length} files...`);
+    
+    const BATCH_SIZE = 5; // Process 5 files at a time to avoid rate limiting
+    const orphanedIds: number[] = [];
+    
+    for (let i = 0; i < uploadsToVerify.length; i += BATCH_SIZE) {
+      const batch = uploadsToVerify.slice(i, i + BATCH_SIZE);
+      
+      const results = await Promise.all(
+        batch.map(async (upload) => {
+          const exists = await verifyFileExists(upload.file_path);
+          return { upload, exists };
+        })
+      );
+      
+      for (const { upload, exists } of results) {
+        if (!exists) {
+          console.log(`File missing: ${upload.file_name} (${upload.file_path})`);
+          orphanedIds.push(upload.id);
+          
+          // Delete orphaned database record
+          try {
+            await supabase.from('uploads').delete().eq('id', upload.id);
+            console.log(`Deleted orphaned record: ${upload.id}`);
+          } catch (deleteError) {
+            console.error('Failed to delete orphaned record:', deleteError);
+          }
+        }
+      }
+      
+      // Small delay between batches to be gentle on the server
+      if (i + BATCH_SIZE < uploadsToVerify.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    // Remove orphaned items from UI
+    if (orphanedIds.length > 0) {
+      console.log(`Removed ${orphanedIds.length} orphaned items`);
+      setUploads(prev => prev.filter(u => !orphanedIds.includes(u.id)));
+    }
+    
+    setIsVerifying(false);
+  }, [verifyFileExists]);
 
   useEffect(() => {
     const fetchUploads = async () => {
@@ -46,12 +115,29 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
     fetchUploads();
   }, [onShowUpload]);
 
+  // Run background verification after uploads are loaded
+  useEffect(() => {
+    if (!isLoading && uploads.length > 0 && !verificationRan.current) {
+      verificationRan.current = true;
+      // Small delay to let the UI render first
+      const timer = setTimeout(() => {
+        verifyAndCleanup(uploads);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, uploads, verifyAndCleanup]);
+
   return (
     <div className="w-full max-w-4xl p-8 space-y-6 rounded-lg shadow-lg bg-card">
       <div className="text-center">
         <h1 className="text-5xl text-text-dark font-display">Family Gallery</h1>
         <p className="mt-2 text-sm text-text-light">
           {uploads.length} {uploads.length === 1 ? 'memory' : 'memories'} shared
+          {isVerifying && (
+            <span className="ml-2 text-gray-400 animate-pulse">
+              (syncing...)
+            </span>
+          )}
         </p>
       </div>
 
