@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface LightboxProps {
   url: string;
@@ -8,6 +8,10 @@ interface LightboxProps {
 }
 
 export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isBuffering, setIsBuffering] = useState(true);
+  const [bufferedPercent, setBufferedPercent] = useState(0);
+
   // Close on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -16,6 +20,56 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
+  // Handle video buffering events
+  useEffect(() => {
+    if (!isVideo || !videoRef.current) return;
+
+    const video = videoRef.current;
+
+    const handleCanPlay = () => {
+      // Enough data buffered to start playing
+      setIsBuffering(false);
+    };
+
+    const handleWaiting = () => {
+      // Video is waiting for more data
+      setIsBuffering(true);
+    };
+
+    const handleProgress = () => {
+      // Update buffering progress
+      if (video.buffered.length > 0 && video.duration > 0) {
+        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+        const percent = (bufferedEnd / video.duration) * 100;
+        setBufferedPercent(percent);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      // Metadata loaded, video is ready to start buffering
+      // Keep buffering state as true until canplay fires
+    };
+
+    const handleCanPlayThrough = () => {
+      // Enough data buffered to play through without stopping
+      setIsBuffering(false);
+    };
+
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('waiting', handleWaiting);
+    video.addEventListener('progress', handleProgress);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('canplaythrough', handleCanPlayThrough);
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('waiting', handleWaiting);
+      video.removeEventListener('progress', handleProgress);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('canplaythrough', handleCanPlayThrough);
+    };
+  }, [isVideo, url]);
 
   return (
     <div
@@ -61,15 +115,28 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
       >
         <div className="flex items-center justify-center max-w-full max-h-[85vh]">
           {isVideo ? (
-            <video
-              src={url}
-              controls
-              autoPlay
-              className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
-              style={{ maxHeight: 'calc(100vh - 120px)' }}
-            >
-              Your browser does not support the video tag.
-            </video>
+            <div className="relative max-w-full max-h-[85vh]">
+              <video
+                ref={videoRef}
+                src={url}
+                controls
+                autoPlay
+                preload="auto"
+                playsInline
+                className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
+                style={{ maxHeight: 'calc(100vh - 120px)' }}
+              >
+                Your browser does not support the video tag.
+              </video>
+              {isBuffering && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 rounded-lg">
+                  <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-white text-sm">
+                    {bufferedPercent > 0 ? `Buffering... ${Math.round(bufferedPercent)}%` : 'Loading video...'}
+                  </p>
+                </div>
+              )}
+            </div>
           ) : (
             <img
               src={url}
