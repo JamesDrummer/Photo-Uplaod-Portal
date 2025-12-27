@@ -91,8 +91,8 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         videos: videos.map(f => ({ name: f.name, type: f.type, size: f.size }))
       });
       
-      // Validate video sizes (200MB = ~5 min of HD video)
-      const MAX_VIDEO_SIZE = 200 * 1024 * 1024; // 200 MB
+      // Validate video sizes (400MB = ~10 min of HD video)
+      const MAX_VIDEO_SIZE = 400 * 1024 * 1024; // 400 MB
       const oversizedVideos = videos.filter(v => v.size > MAX_VIDEO_SIZE);
       
       if (oversizedVideos.length > 0) {
@@ -100,7 +100,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
           `${v.name} (${formatFileSize(v.size)})`
         ).join(', ');
         setError(
-          `The following video(s) exceed the 200MB limit (≈5 minutes): ${videoNames}. Please use shorter videos or compress them before uploading.`
+          `The following video(s) exceed the 400MB limit (≈10 minutes): ${videoNames}. Please use shorter videos or compress them before uploading.`
         );
         setIsUploading(false);
         return;

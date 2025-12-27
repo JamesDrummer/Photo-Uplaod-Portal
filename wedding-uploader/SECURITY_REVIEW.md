@@ -75,7 +75,7 @@ A comprehensive security review was conducted on the Photo Upload Portal applica
 - React automatically escapes content in JSX (prevents XSS in most cases)
 - Password comparison is done client-side (acceptable for this use case, but consider server-side validation for production)
 - File type validation is performed before upload
-- File size limits are enforced (200MB for videos)
+- File size limits are enforced (400MB for videos)
 
 ### ✅ Supabase Integration
 - Uses Supabase's anon key (public key) appropriately
