@@ -2,17 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Christmas';
-  src: url('/fonts/Christmas.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 html {
   height: 100%;
-  background-color: #FFFEFA; /* Ensure base color matches body to avoid white gaps */
+  background-color: #FFF5F7;
 }
 
 body {
@@ -22,7 +14,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Christmas pattern overlay */
+/* ─── Background pattern overlay ─── */
 body::before {
   content: '';
   position: fixed;
@@ -32,44 +24,64 @@ body::before {
   height: 100vh;
   pointer-events: none;
   z-index: 0;
-  background-color: #FFFEFA;
-  background-image: 
-    /* Snowflakes pattern - red tint */
-    radial-gradient(circle at 20% 20%, rgba(196, 30, 58, 0.06) 3px, transparent 3px),
-    radial-gradient(circle at 80% 30%, rgba(196, 30, 58, 0.05) 2px, transparent 2px),
-    radial-gradient(circle at 40% 70%, rgba(196, 30, 58, 0.06) 3px, transparent 3px),
-    radial-gradient(circle at 60% 50%, rgba(196, 30, 58, 0.05) 2px, transparent 2px),
-    /* Green holly dots */
-    radial-gradient(circle at 15% 45%, rgba(34, 139, 34, 0.05) 2px, transparent 2px),
-    radial-gradient(circle at 85% 55%, rgba(34, 139, 34, 0.05) 2px, transparent 2px),
-    /* Gold stars */
-    radial-gradient(circle at 10% 60%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
-    radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
-    radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
-    radial-gradient(circle at 30% 90%, rgba(212, 175, 55, 0.12) 2px, transparent 2px),
-    radial-gradient(circle at 70% 15%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 25% 75%, rgba(212, 175, 55, 0.10) 1.5px, transparent 1.5px),
-    /* Subtle radial gradient for depth */
-    radial-gradient(ellipse at top, rgba(255, 250, 245, 1) 0%, rgba(240, 248, 255, 0.8) 100%);
-  background-size: 
-    120px 120px,
-    180px 180px,
-    150px 150px,
-    200px 200px,
-    160px 160px,
-    140px 140px,
-    90px 90px,
-    110px 110px,
-    70px 70px,
-    85px 85px,
-    130px 130px,
-    95px 95px,
-    100% 100%;
-  opacity: 1;
+  background-color: #FFF5F7;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(212, 132, 154, 0.09) 3px, transparent 3px),
+    radial-gradient(circle at 80% 30%, rgba(212, 132, 154, 0.08) 2px, transparent 2px),
+    radial-gradient(circle at 40% 70%, rgba(212, 132, 154, 0.09) 3px, transparent 3px),
+    radial-gradient(circle at 60% 50%, rgba(212, 132, 154, 0.08) 2px, transparent 2px),
+    radial-gradient(circle at 15% 45%, rgba(255, 182, 193, 0.07) 2px, transparent 2px),
+    radial-gradient(circle at 85% 55%, rgba(255, 182, 193, 0.07) 2px, transparent 2px),
+    radial-gradient(circle at 10% 60%, rgba(212, 175, 106, 0.14) 2px, transparent 2px),
+    radial-gradient(circle at 90% 80%, rgba(212, 175, 106, 0.14) 2px, transparent 2px),
+    radial-gradient(circle at 50% 10%, rgba(212, 175, 106, 0.14) 2px, transparent 2px),
+    radial-gradient(circle at 30% 90%, rgba(212, 175, 106, 0.14) 2px, transparent 2px),
+    radial-gradient(circle at 70% 15%, rgba(212, 175, 106, 0.12) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 25% 75%, rgba(212, 175, 106, 0.12) 1.5px, transparent 1.5px),
+    radial-gradient(ellipse at top, rgba(255, 245, 247, 1) 0%, rgba(255, 240, 245, 0.8) 100%);
+  background-size:
+    120px 120px, 180px 180px, 150px 150px, 200px 200px,
+    160px 160px, 140px 140px, 90px 90px, 110px 110px,
+    70px 70px, 85px 85px, 130px 130px, 95px 95px, 100% 100%;
 }
 
-/* Animated snowflakes container */
-.snowflakes {
+/* ─── Aurora background glow ─── */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(212, 132, 154, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(212, 175, 106, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255, 182, 193, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes auroraShift {
+  0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  50% { background-position: 30% 20%, 70% 80%, 40% 60%; }
+  100% { background-position: 10% 40%, 90% 60%, 60% 40%; }
+}
+
+/* ─── Corner glow ─── */
+.corner-glow {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle at 0% 100%, rgba(212, 175, 106, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Floating celebration elements ─── */
+.floating-elements {
   position: fixed;
   top: 0;
   left: 0;
@@ -80,111 +92,234 @@ body::before {
   overflow: hidden;
 }
 
-/* Individual snowflake */
-.snowflake {
+.floater {
   position: absolute;
   top: -20px;
-  color: rgba(196, 30, 58, 0.25);
+  color: rgba(212, 132, 154, 0.20);
   font-size: 1.2rem;
-  animation: snowfall linear infinite;
+  animation: floatdown linear infinite;
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
 }
 
-.snowflake:nth-child(1) { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 0.8rem; }
-.snowflake:nth-child(2) { left: 15%; animation-duration: 12s; animation-delay: 2s; font-size: 1.2rem; }
-.snowflake:nth-child(3) { left: 25%; animation-duration: 18s; animation-delay: 4s; font-size: 0.9rem; }
-.snowflake:nth-child(4) { left: 35%; animation-duration: 14s; animation-delay: 1s; font-size: 1rem; }
-.snowflake:nth-child(5) { left: 45%; animation-duration: 16s; animation-delay: 3s; font-size: 0.7rem; }
-.snowflake:nth-child(6) { left: 55%; animation-duration: 13s; animation-delay: 5s; font-size: 1.1rem; }
-.snowflake:nth-child(7) { left: 65%; animation-duration: 17s; animation-delay: 2.5s; font-size: 0.85rem; }
-.snowflake:nth-child(8) { left: 75%; animation-duration: 11s; animation-delay: 1.5s; font-size: 1rem; }
-.snowflake:nth-child(9) { left: 85%; animation-duration: 19s; animation-delay: 4.5s; font-size: 0.75rem; }
-.snowflake:nth-child(10) { left: 95%; animation-duration: 14s; animation-delay: 0.5s; font-size: 0.95rem; }
+.floater:nth-child(1) { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 0.8rem; }
+.floater:nth-child(2) { left: 15%; animation-duration: 12s; animation-delay: 2s; font-size: 1.2rem; }
+.floater:nth-child(3) { left: 25%; animation-duration: 18s; animation-delay: 4s; font-size: 0.9rem; }
+.floater:nth-child(4) { left: 35%; animation-duration: 14s; animation-delay: 1s; font-size: 1rem; }
+.floater:nth-child(5) { left: 45%; animation-duration: 16s; animation-delay: 3s; font-size: 0.7rem; }
+.floater:nth-child(6) { left: 55%; animation-duration: 13s; animation-delay: 5s; font-size: 1.1rem; }
+.floater:nth-child(7) { left: 65%; animation-duration: 17s; animation-delay: 2.5s; font-size: 0.85rem; }
+.floater:nth-child(8) { left: 75%; animation-duration: 11s; animation-delay: 1.5s; font-size: 1rem; }
+.floater:nth-child(9) { left: 85%; animation-duration: 19s; animation-delay: 4.5s; font-size: 0.75rem; }
+.floater:nth-child(10) { left: 95%; animation-duration: 14s; animation-delay: 0.5s; font-size: 0.95rem; }
 
-/* Second layer of snowflakes - gold stars */
-.snowflake.star {
-  color: rgba(212, 175, 55, 0.35);
+.floater.sparkle {
+  color: rgba(212, 175, 106, 0.35);
   font-size: 0.8rem;
-  text-shadow: 0 0 4px rgba(212, 175, 55, 0.3);
+  text-shadow: 0 0 4px rgba(212, 175, 106, 0.3);
 }
 
-.snowflake.star:nth-child(11) { left: 10%; animation-duration: 20s; animation-delay: 1s; }
-.snowflake.star:nth-child(12) { left: 30%; animation-duration: 22s; animation-delay: 3s; }
-.snowflake.star:nth-child(13) { left: 50%; animation-duration: 18s; animation-delay: 5s; }
-.snowflake.star:nth-child(14) { left: 70%; animation-duration: 24s; animation-delay: 2s; }
-.snowflake.star:nth-child(15) { left: 90%; animation-duration: 21s; animation-delay: 4s; }
+.floater.sparkle:nth-child(11) { left: 10%; animation-duration: 20s; animation-delay: 1s; }
+.floater.sparkle:nth-child(12) { left: 30%; animation-duration: 22s; animation-delay: 3s; }
+.floater.sparkle:nth-child(13) { left: 50%; animation-duration: 18s; animation-delay: 5s; }
+.floater.sparkle:nth-child(14) { left: 70%; animation-duration: 24s; animation-delay: 2s; }
+.floater.sparkle:nth-child(15) { left: 90%; animation-duration: 21s; animation-delay: 4s; }
 
-/* Additional 10 snowflakes (16-25) */
-.snowflake:nth-child(16) { left: 8%; animation-duration: 13s; animation-delay: 0.5s; font-size: 0.9rem; }
-.snowflake:nth-child(17) { left: 18%; animation-duration: 16s; animation-delay: 2.5s; font-size: 1.1rem; }
-.snowflake:nth-child(18) { left: 28%; animation-duration: 11s; animation-delay: 4.5s; font-size: 0.75rem; }
-.snowflake:nth-child(19) { left: 38%; animation-duration: 19s; animation-delay: 1.5s; font-size: 1rem; }
-.snowflake:nth-child(20) { left: 48%; animation-duration: 14s; animation-delay: 3.5s; font-size: 0.85rem; }
-.snowflake:nth-child(21) { left: 58%; animation-duration: 17s; animation-delay: 0.5s; font-size: 1.15rem; }
-.snowflake:nth-child(22) { left: 68%; animation-duration: 12s; animation-delay: 5.5s; font-size: 0.7rem; }
-.snowflake:nth-child(23) { left: 78%; animation-duration: 20s; animation-delay: 2s; font-size: 0.95rem; }
-.snowflake:nth-child(24) { left: 88%; animation-duration: 15s; animation-delay: 4s; font-size: 1.05rem; }
-.snowflake:nth-child(25) { left: 98%; animation-duration: 18s; animation-delay: 1s; font-size: 0.8rem; }
+.floater:nth-child(16) { left: 8%; animation-duration: 13s; animation-delay: 0.5s; font-size: 0.9rem; }
+.floater:nth-child(17) { left: 18%; animation-duration: 16s; animation-delay: 2.5s; font-size: 1.1rem; }
+.floater:nth-child(18) { left: 28%; animation-duration: 11s; animation-delay: 4.5s; font-size: 0.75rem; }
+.floater:nth-child(19) { left: 38%; animation-duration: 19s; animation-delay: 1.5s; font-size: 1rem; }
+.floater:nth-child(20) { left: 48%; animation-duration: 14s; animation-delay: 3.5s; font-size: 0.85rem; }
+.floater:nth-child(21) { left: 58%; animation-duration: 17s; animation-delay: 0.5s; font-size: 1.15rem; }
+.floater:nth-child(22) { left: 68%; animation-duration: 12s; animation-delay: 5.5s; font-size: 0.7rem; }
+.floater:nth-child(23) { left: 78%; animation-duration: 20s; animation-delay: 2s; font-size: 0.95rem; }
+.floater:nth-child(24) { left: 88%; animation-duration: 15s; animation-delay: 4s; font-size: 1.05rem; }
+.floater:nth-child(25) { left: 98%; animation-duration: 18s; animation-delay: 1s; font-size: 0.8rem; }
 
-/* Additional 5 stars (26-30) */
-.snowflake.star:nth-child(26) { left: 20%; animation-duration: 23s; animation-delay: 0.5s; }
-.snowflake.star:nth-child(27) { left: 40%; animation-duration: 19s; animation-delay: 2.5s; }
-.snowflake.star:nth-child(28) { left: 60%; animation-duration: 25s; animation-delay: 4.5s; }
-.snowflake.star:nth-child(29) { left: 80%; animation-duration: 17s; animation-delay: 1.5s; }
-.snowflake.star:nth-child(30) { left: 3%; animation-duration: 21s; animation-delay: 3.5s; }
+.floater.sparkle:nth-child(26) { left: 20%; animation-duration: 23s; animation-delay: 0.5s; }
+.floater.sparkle:nth-child(27) { left: 40%; animation-duration: 19s; animation-delay: 2.5s; }
+.floater.sparkle:nth-child(28) { left: 60%; animation-duration: 25s; animation-delay: 4.5s; }
+.floater.sparkle:nth-child(29) { left: 80%; animation-duration: 17s; animation-delay: 1.5s; }
+.floater.sparkle:nth-child(30) { left: 3%; animation-duration: 21s; animation-delay: 3.5s; }
 
-@keyframes snowfall {
+@keyframes floatdown {
   0% {
-    transform: translateY(-20px) rotate(0deg);
+    transform: translateY(-20px) translateX(0) scale(1);
     opacity: 0;
   }
   10% {
-    opacity: 1;
+    opacity: 0.8;
+  }
+  25% {
+    transform: translateY(25vh) translateX(15px) scale(1.05);
+  }
+  50% {
+    transform: translateY(50vh) translateX(-10px) scale(0.95);
+  }
+  75% {
+    transform: translateY(75vh) translateX(12px) scale(1.02);
   }
   90% {
-    opacity: 1;
+    opacity: 0.6;
   }
   100% {
-    transform: translateY(100vh) rotate(360deg);
+    transform: translateY(100vh) translateX(-5px) scale(1);
     opacity: 0;
   }
 }
 
-/* Corner decorations */
-body::after {
+/* ─── Staggered entrance animations ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.stagger-1 { animation: fadeInUp 0.5s ease-out 0.1s forwards; opacity: 0; }
+.stagger-2 { animation: fadeInUp 0.5s ease-out 0.2s forwards; opacity: 0; }
+.stagger-3 { animation: fadeInUp 0.5s ease-out 0.3s forwards; opacity: 0; }
+.stagger-4 { animation: fadeInUp 0.5s ease-out 0.4s forwards; opacity: 0; }
+.stagger-5 { animation: fadeInUp 0.5s ease-out 0.5s forwards; opacity: 0; }
+
+/* ─── Decorative flourish under titles ─── */
+.flourish {
+  position: relative;
+  padding-bottom: 1.25rem;
+}
+.flourish::after {
   content: '';
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle at 100% 0%, rgba(196, 30, 58, 0.04) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Bottom left corner glow */
-.corner-glow {
-  position: fixed;
+  position: absolute;
   bottom: 0;
-  left: 0;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle at 0% 100%, rgba(34, 139, 34, 0.03) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 106, 0.6), transparent);
+}
+.flourish::before {
+  content: '\2666';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: rgba(212, 175, 106, 0.6);
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0 4px;
 }
 
-/* Ensure content stays above background effects */
+/* ─── Section divider ─── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 106, 0.3), transparent);
+  margin: 0.5rem 0;
+}
+
+/* ─── Luxe button ─── */
+.btn-luxe {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #D4849A 0%, #C06E84 100%);
+  box-shadow: 0 4px 15px rgba(212, 132, 154, 0.3);
+  transition: all 0.3s ease;
+}
+.btn-luxe:hover {
+  box-shadow: 0 6px 20px rgba(212, 132, 154, 0.45);
+  transform: translateY(-1px);
+}
+.btn-luxe::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+.btn-luxe:hover::after {
+  left: 100%;
+}
+.btn-luxe:disabled {
+  background: linear-gradient(135deg, #C4B5B8 0%, #A89A9D 100%);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.btn-luxe:disabled::after {
+  display: none;
+}
+
+/* ─── Elegant spinner ─── */
+.luxe-spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(212, 175, 106, 0.2);
+  border-top-color: #D4849A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Skeleton shimmer ─── */
+.skeleton {
+  background: linear-gradient(90deg, rgba(212,132,154,0.06) 25%, rgba(212,132,154,0.12) 50%, rgba(212,132,154,0.06) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.75rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Gallery item entrance ─── */
+.gallery-item-enter {
+  animation: fadeInUp 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* ─── Lightbox animations ─── */
+.lightbox-backdrop {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+.lightbox-content {
+  animation: lightboxIn 0.3s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes lightboxIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Z-index layering ─── */
 #root {
   position: relative;
   z-index: 10;
 }
 
-/* Ensure cards have proper layering above snowflakes */
 .bg-card {
   position: relative;
   z-index: 20;
-  background-color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-top: 2px solid rgba(212, 175, 106, 0.4);
+  box-shadow:
+    0 4px 6px -1px rgba(212, 132, 154, 0.08),
+    0 10px 30px -5px rgba(212, 132, 154, 0.12),
+    0 20px 50px -12px rgba(45, 31, 45, 0.08);
 }
-

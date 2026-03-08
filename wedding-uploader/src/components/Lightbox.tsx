@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface LightboxProps {
   url: string;
@@ -20,6 +21,15 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   // Handle video buffering events
   useEffect(() => {
@@ -71,9 +81,9 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
     };
   }, [isVideo, url]);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md lightbox-backdrop"
       onClick={onClose}
       onTouchStart={(e) => {
         // Simple swipe down to close gesture
@@ -90,27 +100,17 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
     >
       <button
         onClick={onClose}
-        className="absolute text-white transition-colors top-4 right-4 hover:text-primary z-10 touch-manipulation"
+        className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 touch-manipulation"
         aria-label="Close"
         style={{ touchAction: 'manipulation' }}
       >
-        <svg
-          className="w-10 h-10 md:w-8 md:h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
 
       <div
-        className="relative flex flex-col items-center max-w-[95vw] max-h-[95vh] p-4"
+        className="relative flex flex-col items-center max-w-[95vw] max-h-[95vh] p-4 lightbox-content"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-center max-w-full max-h-[85vh]">
@@ -123,15 +123,15 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
                 autoPlay
                 preload="auto"
                 playsInline
-                className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
+                className="max-w-full max-h-[85vh] rounded-xl shadow-2xl ring-1 ring-white/10"
                 style={{ maxHeight: 'calc(100vh - 120px)' }}
               >
                 Your browser does not support the video tag.
               </video>
               {isBuffering && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 rounded-lg">
-                  <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-white text-sm">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 rounded-xl">
+                  <div className="luxe-spinner mb-4"></div>
+                  <p className="text-white text-sm italic">
                     {bufferedPercent > 0 ? `Buffering... ${Math.round(bufferedPercent)}%` : 'Loading video...'}
                   </p>
                 </div>
@@ -141,7 +141,7 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
             <img
               src={url}
               alt={filename}
-              className="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain"
+              className="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain ring-1 ring-white/10"
               onLoad={() => console.log('Image loaded successfully:', url)}
               onError={(e) => {
                 console.error('Failed to load image:', url);
@@ -197,7 +197,8 @@ export function Lightbox({ url, filename, isVideo, onClose }: LightboxProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

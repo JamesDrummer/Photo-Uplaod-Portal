@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { PasswordScreen } from './components/PasswordScreen';
 import { UploadScreen } from './components/UploadScreen';
 import { GalleryScreen } from './components/GalleryScreen'; // Import new component
+import { BugReportModal } from './components/BugReportModal';
 import { getSession, clearSession } from './utils/sessionStorage';
+import { logAction } from './utils/actionLog';
 
 // Get the password from env
 const eventPassword = import.meta.env.VITE_APP_EVENT_PASSWORD;
@@ -15,6 +18,7 @@ function App() {
   const [page, setPage] = useState<Page>('password');
   const [uploaderName, setUploaderName] = useState<string>('');
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
+  const [showBugReport, setShowBugReport] = useState(false);
 
   // Check for valid session on mount
   useEffect(() => {
@@ -52,15 +56,23 @@ function App() {
       case 'password':
         return <PasswordScreen onSuccess={(name) => {
           setUploaderName(name);
+          logAction('login_success', name);
+          logAction('page_navigate', 'gallery');
           setPage('gallery');
         }} />;
       case 'upload':
         return <UploadScreen 
-          onShowGallery={() => setPage('gallery')} 
+          onShowGallery={() => {
+            logAction('page_navigate', 'gallery');
+            setPage('gallery');
+          }} 
           uploaderName={uploaderName}
         />;
       case 'gallery':
-        return <GalleryScreen onShowUpload={() => setPage('upload')} />;
+        return <GalleryScreen onShowUpload={() => {
+          logAction('page_navigate', 'upload');
+          setPage('upload');
+        }} />;
       default:
         return <PasswordScreen onSuccess={(name) => {
           setUploaderName(name);
@@ -71,42 +83,42 @@ function App() {
 
   return (
     <>
-      {/* Animated snowflakes */}
-      <div className="snowflakes" aria-hidden="true">
-        {/* Original 10 snowflakes */}
-        <div className="snowflake">❄</div>
-        <div className="snowflake">❅</div>
-        <div className="snowflake">❆</div>
-        <div className="snowflake">❄</div>
-        <div className="snowflake">❅</div>
-        <div className="snowflake">❆</div>
-        <div className="snowflake">❄</div>
-        <div className="snowflake">❅</div>
-        <div className="snowflake">❆</div>
-        <div className="snowflake">❄</div>
-        {/* Original 5 stars */}
-        <div className="snowflake star">✦</div>
-        <div className="snowflake star">✧</div>
-        <div className="snowflake star">✦</div>
-        <div className="snowflake star">✧</div>
-        <div className="snowflake star">✦</div>
-        {/* Additional 10 snowflakes */}
-        <div className="snowflake">❅</div>
-        <div className="snowflake">❆</div>
-        <div className="snowflake">❄</div>
-        <div className="snowflake">❅</div>
-        <div className="snowflake">❆</div>
-        <div className="snowflake">❄</div>
-        <div className="snowflake">❅</div>
-        <div className="snowflake">❆</div>
-        <div className="snowflake">❄</div>
-        <div className="snowflake">❅</div>
-        {/* Additional 5 stars */}
-        <div className="snowflake star">✧</div>
-        <div className="snowflake star">✦</div>
-        <div className="snowflake star">✧</div>
-        <div className="snowflake star">✦</div>
-        <div className="snowflake star">✧</div>
+      {/* Floating celebration elements */}
+      <div className="floating-elements" aria-hidden="true">
+        {/* Hearts and celebration icons */}
+        <div className="floater">💕</div>
+        <div className="floater">✨</div>
+        <div className="floater">💍</div>
+        <div className="floater">🥂</div>
+        <div className="floater">♡</div>
+        <div className="floater">💕</div>
+        <div className="floater">✨</div>
+        <div className="floater">💍</div>
+        <div className="floater">🥂</div>
+        <div className="floater">♡</div>
+        {/* Gold sparkles */}
+        <div className="floater sparkle">✨</div>
+        <div className="floater sparkle">💛</div>
+        <div className="floater sparkle">✨</div>
+        <div className="floater sparkle">💛</div>
+        <div className="floater sparkle">✨</div>
+        {/* More celebration icons */}
+        <div className="floater">♡</div>
+        <div className="floater">💕</div>
+        <div className="floater">✨</div>
+        <div className="floater">🥂</div>
+        <div className="floater">💍</div>
+        <div className="floater">♡</div>
+        <div className="floater">💕</div>
+        <div className="floater">✨</div>
+        <div className="floater">🥂</div>
+        <div className="floater">💍</div>
+        {/* More sparkles */}
+        <div className="floater sparkle">💛</div>
+        <div className="floater sparkle">✨</div>
+        <div className="floater sparkle">💛</div>
+        <div className="floater sparkle">✨</div>
+        <div className="floater sparkle">💛</div>
       </div>
       
       {/* Corner glow decoration */}
@@ -115,15 +127,44 @@ function App() {
       {/* Main content */}
       <div className="flex items-center justify-center min-h-screen px-4 py-12">
         {isCheckingSession ? (
-          <div className="w-full max-w-md p-8 space-y-6 rounded-lg shadow-lg bg-card">
-            <div className="text-center">
-              <p className="text-text-light">Loading...</p>
+          <div className="w-full max-w-md p-8 rounded-2xl bg-card">
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="luxe-spinner"></div>
+              <p className="mt-4 text-sm text-text-light italic">Loading...</p>
             </div>
           </div>
         ) : (
           renderPage()
         )}
       </div>
+
+      {/* Bug report FAB — bottom-left, always visible */}
+      {createPortal(
+        <div className="fixed left-6 bottom-6 sm:left-8 sm:bottom-8 z-[90]">
+          <button
+            onClick={() => setShowBugReport(true)}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm border border-primary/20 shadow-md text-text-light hover:bg-white hover:shadow-lg hover:text-primary transition-all duration-200 touch-manipulation"
+            title="Report a Bug"
+            style={{ touchAction: 'manipulation' }}
+            aria-label="Report a bug"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </div>,
+        document.body
+      )}
+
+      {/* Bug report modal */}
+      {showBugReport && (
+        <BugReportModal
+          currentPage={page}
+          reporterName={uploaderName || undefined}
+          onClose={() => setShowBugReport(false)}
+        />
+      )}
     </>
   );
 }

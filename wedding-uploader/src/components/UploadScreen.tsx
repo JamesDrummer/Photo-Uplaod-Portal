@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { convertToJpeg, formatFileSize } from '../utils/imageConverter';
+import { logAction } from '../utils/actionLog';
 
 // Add this new prop
 interface UploadScreenProps {
@@ -60,13 +62,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if Supabase is configured
     if (!isSupabaseConfigured()) {
       setError('Supabase is not configured. Please add your credentials to .env.local file and restart the server.');
       return;
     }
-    
+
     if (!files || files.length === 0) {
       setError('Please select at least one file to upload.');
       return;
@@ -76,13 +78,15 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
     setError('');
     setSuccessMessage('');
 
+    logAction('upload_start', `${files.length} file(s) selected`);
+
     try {
       // Separate images, GIFs, and videos
       const fileArray = Array.from(files);
       const gifs = fileArray.filter(f => isGifFile(f));
       const images = fileArray.filter(f => isImageFile(f) && !isGifFile(f));
       const videos = fileArray.filter(f => f.type.startsWith('video/'));
-      
+
       // Log file detection for debugging
       console.log('Files detected:', {
         total: fileArray.length,
@@ -90,13 +94,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         gifs: gifs.map(f => ({ name: f.name, type: f.type, size: f.size })),
         videos: videos.map(f => ({ name: f.name, type: f.type, size: f.size }))
       });
-      
+
       // Validate video sizes (400MB = ~10 min of HD video)
       const MAX_VIDEO_SIZE = 400 * 1024 * 1024; // 400 MB
       const oversizedVideos = videos.filter(v => v.size > MAX_VIDEO_SIZE);
-      
+
       if (oversizedVideos.length > 0) {
-        const videoNames = oversizedVideos.map(v => 
+        const videoNames = oversizedVideos.map(v =>
           `${v.name} (${formatFileSize(v.size)})`
         ).join(', ');
         setError(
@@ -110,26 +114,26 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
       if (images.length > 0) {
         setSuccessMessage(`Converting ${images.length} image(s) to JPEG...`);
       }
-      
+
       const convertedImages = await Promise.all(
         images.map(async (img) => {
           console.log(`Converting ${img.name}...`);
           const converted = await convertToJpeg(img, 0.8);
-          
+
           // Check if file was actually converted or returned as-is
           if (converted.name !== img.name) {
             console.log(`✓ Converted ${img.name} to ${converted.name} (${formatFileSize(img.size)} → ${formatFileSize(converted.size)})`);
           } else {
             console.log(`→ Kept original: ${img.name} (conversion not needed or not supported)`);
           }
-          
+
           return converted;
         })
       );
 
       // Combine converted images with original GIFs and videos (GIFs keep their animation)
       const filesToUpload = [...convertedImages, ...gifs, ...videos];
-      
+
       setSuccessMessage(`Uploading ${filesToUpload.length} file(s)...`);
 
       // Upload all files
@@ -152,7 +156,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         const { data: urlData } = supabase.storage
           .from('guest-media')
           .getPublicUrl(filePath);
-        
+
         if (!urlData) {
           throw new Error('Could not get file URL.');
         }
@@ -167,7 +171,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             file_path: filePath,
             uploader_name: sanitizeUserInput(uploaderName),
           });
-        
+
         if (dbError) {
           throw new Error(`Database logging failed: ${dbError.message}`);
         }
@@ -176,6 +180,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
       });
 
       const uploadedFiles = await Promise.all(uploadPromises);
+      logAction('upload_success', `${uploadedFiles.length} file(s) uploaded`);
       setSuccessMessage(
         `Successfully uploaded ${uploadedFiles.length} file(s)! Thank you!`
       );
@@ -183,6 +188,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
       // Reset the file input visually
       (document.getElementById('file-upload') as HTMLInputElement).value = '';
     } catch (err: any) {
+      logAction('upload_error', err.message);
       setError(err.message);
     } finally {
       setIsUploading(false);
@@ -190,78 +196,96 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
   };
 
   return (
-    <div className="w-full max-w-md p-8 space-y-6 rounded-lg shadow-lg bg-card">
-      <div className="text-center">
-        <h1 className="text-5xl text-text-dark font-display">
+    <>
+    <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
+      <div className="text-center stagger-1">
+        <h1 className="text-5xl text-text-dark font-display flourish">
           Share Your Moments
         </h1>
-        <p className="mt-2 text-lg text-red-600">
+        <p className="mt-6 text-lg text-primary font-script text-2xl">
           Welcome, {uploaderName}!
         </p>
-        <p className="mt-2 text-text-light">
-          Share your favorite moments from the holidays!
+        <p className="mt-1 text-text-light italic text-sm">
+          Share your favourite moments from the hen do!
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
+      <div className="section-divider" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="stagger-2">
           <label
             htmlFor="file-upload"
-            className="block mb-2 text-sm font-medium text-text-light"
+            className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-primary/30 rounded-xl bg-white/20 hover:bg-white/30 hover:border-primary/50 transition-all duration-300 cursor-pointer"
           >
-            Select Photos & Videos
+            <svg className="w-8 h-8 text-primary/50 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span className="text-sm text-text-light">Tap to select photos & videos</span>
+            {files && files.length > 0 && (
+              <span className="mt-2 px-3 py-1 text-xs font-medium text-white bg-primary/80 rounded-full">
+                {files.length} file{files.length > 1 ? 's' : ''} selected
+              </span>
+            )}
+            <input
+              id="file-upload"
+              name="file-upload"
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              accept="image/*,video/*,.heic,.heif"
+              className="hidden"
+            />
           </label>
-          <input
-            id="file-upload"
-            name="file-upload"
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            accept="image/*,video/*,.heic,.heif"
-            className="block w-full text-sm rounded-lg cursor-pointer text-text-light file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-red-800"
-          />
-          <p className="mt-1 text-xs text-gray-400">
-            You can select multiple files at once. Images will be automatically converted to JPEG for faster uploads.
+          <p className="mt-2 text-xs text-text-light/60 text-center">
+            Images will be automatically converted to JPEG for faster uploads
           </p>
         </div>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-400 text-center">{error}</p>}
         {successMessage && (
-          <p className="text-sm text-green-400">{successMessage}</p>
+          <p className="text-sm text-primary italic text-center">{successMessage}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={isUploading}
-          className="w-full p-3 font-bold text-white transition-colors rounded-md bg-primary hover:bg-red-800 disabled:bg-gray-500 disabled:cursor-not-allowed"
-        >
-          {isUploading ? 'Uploading...' : 'Upload Files'}
-        </button>
+        <div className="stagger-3">
+          <button
+            type="submit"
+            disabled={isUploading}
+            className="w-full py-3.5 px-6 font-bold text-white rounded-full btn-luxe tracking-wide"
+          >
+            {isUploading ? 'Uploading...' : 'Upload Files'}
+          </button>
+        </div>
       </form>
 
-      {/* Floating Gallery Button */}
-      <button
-        onClick={onShowGallery}
-        className="fixed p-4 text-white transition-all duration-300 rounded-full shadow-lg bottom-8 right-8 bg-primary hover:bg-red-800 hover:scale-110 touch-manipulation z-40"
-        title="View Gallery"
-        style={{ touchAction: 'manipulation' }}
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      </button>
     </div>
+
+      {createPortal(
+        <div className="fixed right-6 bottom-6 sm:right-8 sm:bottom-8 z-[90]">
+          <button
+            onClick={onShowGallery}
+            className="p-4 text-white rounded-full btn-luxe animate-pulse-soft hover:scale-110 transition-transform duration-300 touch-manipulation"
+            title="View Gallery"
+            style={{ touchAction: 'manipulation' }}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </button>
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
-

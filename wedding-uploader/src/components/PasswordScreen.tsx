@@ -32,17 +32,17 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!captchaToken) {
       setError('Please complete the security check.');
       return;
     }
-    
+
     if (!name.trim()) {
       setError('Please enter your name.');
       return;
     }
-    
+
     if (password === eventPassword) {
       // Save session for future use
       try {
@@ -51,7 +51,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         // Silently fail - session saving is optional
         console.error('Failed to save session:', error);
       }
-      
+
       onSuccess(name.trim()); // Pass the name to App.tsx
     } else {
       setError('Incorrect Password. Please try again.');
@@ -59,21 +59,24 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   };
 
   return (
-    <div className="w-full max-w-md p-8 space-y-6 rounded-lg shadow-lg bg-card">
-      <div className="text-center">
-        <h1 className="text-5xl text-text-dark font-display">
-          Family Christmas 2025
+    <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
+      <div className="text-center stagger-1">
+        <h1 className="text-5xl text-text-dark font-display flourish">
+          <span className="font-script text-primary">Danielle's</span>{' '}
+          Hen Do
         </h1>
-        <p className="mt-4 text-text-light">
-          Please enter your name and the event password to upload your media.
+        <p className="mt-6 text-text-light italic">
+          Enter your name and the event password to share your photos
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
+      <div className="section-divider" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="stagger-2">
           <label
             htmlFor="name"
-            className="block mb-2 text-sm font-medium text-text-light"
+            className="block mb-2 text-xs font-medium text-text-light uppercase tracking-widest"
           >
             Your Name
           </label>
@@ -85,14 +88,14 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
             required
-            className="w-full p-3 text-gray-800 placeholder-gray-400 bg-gray-50 border border-gray-300 rounded-md"
+            className="w-full p-3 text-text-dark placeholder-gray-400/60 bg-white/40 border border-primary/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 focus:bg-white/60 transition-all duration-300"
           />
         </div>
 
-        <div>
+        <div className="stagger-3">
           <label
             htmlFor="password"
-            className="block mb-2 text-sm font-medium text-text-light"
+            className="block mb-2 text-xs font-medium text-text-light uppercase tracking-widest"
           >
             Event Password
           </label>
@@ -103,12 +106,12 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full p-3 text-gray-800 placeholder-gray-400 bg-gray-50 border border-gray-300 rounded-md"
+            className="w-full p-3 text-text-dark placeholder-gray-400/60 bg-white/40 border border-primary/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 focus:bg-white/60 transition-all duration-300"
           />
         </div>
 
         {/* Turnstile CAPTCHA Widget */}
-        <div className="flex justify-center">
+        <div className="flex justify-center stagger-4">
           <Turnstile
             sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
             onVerify={(token) => setCaptchaToken(token)}
@@ -121,17 +124,18 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
           />
         </div>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={!captchaToken}
-          className="w-full p-3 font-bold text-white transition-colors rounded-md bg-primary hover:bg-red-800 disabled:bg-gray-500 disabled:cursor-not-allowed"
-        >
-          Enter
-        </button>
+        <div className="stagger-5">
+          <button
+            type="submit"
+            disabled={!captchaToken}
+            className="w-full py-3.5 px-6 font-bold text-white rounded-full btn-luxe tracking-wide"
+          >
+            Enter
+          </button>
+        </div>
       </form>
     </div>
   );
 }
-
