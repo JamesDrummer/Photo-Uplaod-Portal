@@ -52,7 +52,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         console.error('Failed to save session:', error);
       }
 
-      onSuccess(name.trim()); // Pass the name to App.tsx
+      onSuccess(name.trim());
     } else {
       setError('Incorrect Password. Please try again.');
     }
@@ -62,10 +62,13 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
     <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
       <div className="text-center stagger-1">
         <h1 className="text-5xl text-text-dark font-display flourish">
-          <span className="font-script text-primary">Danielle's</span>{' '}
-          Hen Do
+          <span className="font-celtic text-gold">The Lads'</span>{' '}
+          Stag Do
         </h1>
-        <p className="mt-6 text-text-light italic">
+        <p className="mt-3 text-sm font-celtic text-primary tracking-wide">
+          ☘️ Ireland Edition ☘️
+        </p>
+        <p className="mt-4 text-text-light italic">
           Enter your name and the event password to share your photos
         </p>
       </div>
@@ -88,7 +91,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
             required
-            className="w-full p-3 text-text-dark placeholder-gray-400/60 bg-white/40 border border-primary/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 focus:bg-white/60 transition-all duration-300"
+            className="w-full p-3 text-text-dark placeholder-text-light/40 bg-background/60 border border-primary/25 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 focus:bg-background/80 transition-all duration-300"
           />
         </div>
 
@@ -106,7 +109,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full p-3 text-text-dark placeholder-gray-400/60 bg-white/40 border border-primary/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 focus:bg-white/60 transition-all duration-300"
+            className="w-full p-3 text-text-dark placeholder-text-light/40 bg-background/60 border border-primary/25 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 focus:bg-background/80 transition-all duration-300"
           />
         </div>
 
@@ -120,7 +123,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
               setError('Security check failed. Please try again.');
             }}
             onExpire={() => setCaptchaToken(null)}
-            theme="light"
+            theme="dark"
           />
         </div>
 
@@ -132,7 +135,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             disabled={!captchaToken}
             className="w-full py-3.5 px-6 font-bold text-white rounded-full btn-luxe tracking-wide"
           >
-            Enter
+            Enter the Craic
           </button>
         </div>
       </form>

@@ -99,7 +99,7 @@ export function GalleryItem({ upload, index, onFileMissing }: GalleryItemProps) 
   return (
     <>
       <div
-        className="relative w-full overflow-hidden transition-all duration-300 rounded-xl shadow-md cursor-pointer aspect-square hover:scale-[1.03] hover:shadow-lg touch-manipulation border border-primary/10 gallery-item-enter"
+        className="relative w-full overflow-hidden transition-all duration-300 rounded-xl shadow-md cursor-pointer aspect-square hover:scale-[1.03] hover:shadow-lg hover:shadow-primary/20 touch-manipulation border border-primary/15 gallery-item-enter"
         style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
       >
         {!isMediaLoaded && (
@@ -191,8 +191,8 @@ export function GalleryItem({ upload, index, onFileMissing }: GalleryItemProps) 
                   }
                 }}
               />
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+              {/* Hover overlay - Irish green gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/25 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
             </>
           )}
         </button>

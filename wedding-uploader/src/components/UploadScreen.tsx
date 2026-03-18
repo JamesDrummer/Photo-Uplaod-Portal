@@ -182,7 +182,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
       const uploadedFiles = await Promise.all(uploadPromises);
       logAction('upload_success', `${uploadedFiles.length} file(s) uploaded`);
       setSuccessMessage(
-        `Successfully uploaded ${uploadedFiles.length} file(s)! Thank you!`
+        `Successfully uploaded ${uploadedFiles.length} file(s)! Sláinte!`
       );
       setFiles(null);
       // Reset the file input visually
@@ -200,13 +200,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
     <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
       <div className="text-center stagger-1">
         <h1 className="text-5xl text-text-dark font-display flourish">
-          Share Your Moments
+          Share the Craic
         </h1>
-        <p className="mt-6 text-lg text-primary font-script text-2xl">
+        <p className="mt-6 text-lg text-gold font-celtic text-2xl">
           Welcome, {uploaderName}!
         </p>
         <p className="mt-1 text-text-light italic text-sm">
-          Share your favourite moments from the hen do!
+          Upload your best moments from the stag do! ☘️
         </p>
       </div>
 
@@ -216,9 +216,9 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         <div className="stagger-2">
           <label
             htmlFor="file-upload"
-            className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-primary/30 rounded-xl bg-white/20 hover:bg-white/30 hover:border-primary/50 transition-all duration-300 cursor-pointer"
+            className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-primary/35 rounded-xl bg-background/40 hover:bg-background/60 hover:border-primary/55 transition-all duration-300 cursor-pointer"
           >
-            <svg className="w-8 h-8 text-primary/50 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-primary/60 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <span className="text-sm text-text-light">Tap to select photos & videos</span>
@@ -244,7 +244,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
         {error && <p className="text-sm text-red-400 text-center">{error}</p>}
         {successMessage && (
-          <p className="text-sm text-primary italic text-center">{successMessage}</p>
+          <p className="text-sm text-gold italic text-center">{successMessage}</p>
         )}
 
         <div className="stagger-3">
