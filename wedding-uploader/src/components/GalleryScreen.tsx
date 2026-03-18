@@ -205,12 +205,12 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
     <>
       <div className="w-full max-w-4xl p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
         <div className="text-center stagger-1">
-          <h1 className="text-5xl text-text-dark font-display flourish">Hen Do Gallery</h1>
-          <p className="mt-5 text-xs text-primary italic tracking-wide">capture every moment</p>
+          <h1 className="text-5xl text-text-dark font-display flourish">Stag Do Gallery</h1>
+          <p className="mt-5 text-xs text-gold italic tracking-wide font-celtic">the craic was mighty ☘️</p>
           <p className="mt-2 text-sm text-text-light">
             {uploads.length} {uploads.length === 1 ? 'memory' : 'memories'} shared
             {isVerifying && (
-              <span className="ml-2 text-gray-400 animate-pulse">
+              <span className="ml-2 text-text-light/50 animate-pulse">
                 (syncing...)
               </span>
             )}
@@ -229,7 +229,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
         {error && (
           <div className="text-center">
             <p className="text-red-400">{error}</p>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-text-light/50">
               Make sure you've added the file_path column to your uploads table.
             </p>
           </div>

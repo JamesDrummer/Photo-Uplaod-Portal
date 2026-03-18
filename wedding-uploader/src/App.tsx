@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PasswordScreen } from './components/PasswordScreen';
 import { UploadScreen } from './components/UploadScreen';
-import { GalleryScreen } from './components/GalleryScreen'; // Import new component
+import { GalleryScreen } from './components/GalleryScreen';
 import { BugReportModal } from './components/BugReportModal';
 import { getSession, clearSession } from './utils/sessionStorage';
 import { logAction } from './utils/actionLog';
@@ -14,7 +14,6 @@ const eventPassword = import.meta.env.VITE_APP_EVENT_PASSWORD;
 type Page = 'password' | 'upload' | 'gallery';
 
 function App() {
-  // Update state to hold a string, not a boolean
   const [page, setPage] = useState<Page>('password');
   const [uploaderName, setUploaderName] = useState<string>('');
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
@@ -26,12 +25,10 @@ function App() {
       try {
         const session = await getSession();
         if (session) {
-          // Verify the password is still correct (in case it changed)
           if (session.password === eventPassword) {
             setUploaderName(session.name);
             setPage('gallery');
           } else {
-            // Password changed, clear invalid session
             clearSession();
             setPage('password');
           }
@@ -39,7 +36,6 @@ function App() {
           setPage('password');
         }
       } catch (error) {
-        // If session check fails, show password screen
         console.error('Failed to check session:', error);
         setPage('password');
       } finally {
@@ -50,7 +46,6 @@ function App() {
     checkSession();
   }, []);
 
-  // Helper function to render the current page
   const renderPage = () => {
     switch (page) {
       case 'password':
@@ -61,11 +56,11 @@ function App() {
           setPage('gallery');
         }} />;
       case 'upload':
-        return <UploadScreen 
+        return <UploadScreen
           onShowGallery={() => {
             logAction('page_navigate', 'gallery');
             setPage('gallery');
-          }} 
+          }}
           uploaderName={uploaderName}
         />;
       case 'gallery':
@@ -83,47 +78,47 @@ function App() {
 
   return (
     <>
-      {/* Floating celebration elements */}
+      {/* Floating Irish celebration elements */}
       <div className="floating-elements" aria-hidden="true">
-        {/* Hearts and celebration icons */}
-        <div className="floater">💕</div>
-        <div className="floater">✨</div>
-        <div className="floater">💍</div>
-        <div className="floater">🥂</div>
-        <div className="floater">♡</div>
-        <div className="floater">💕</div>
-        <div className="floater">✨</div>
-        <div className="floater">💍</div>
-        <div className="floater">🥂</div>
-        <div className="floater">♡</div>
+        {/* Shamrocks and Irish icons */}
+        <div className="floater">☘️</div>
+        <div className="floater">🍺</div>
+        <div className="floater">🇮🇪</div>
+        <div className="floater">🥃</div>
+        <div className="floater">☘️</div>
+        <div className="floater">🍀</div>
+        <div className="floater">🍺</div>
+        <div className="floater">🎉</div>
+        <div className="floater">🥃</div>
+        <div className="floater">☘️</div>
         {/* Gold sparkles */}
-        <div className="floater sparkle">✨</div>
-        <div className="floater sparkle">💛</div>
-        <div className="floater sparkle">✨</div>
-        <div className="floater sparkle">💛</div>
-        <div className="floater sparkle">✨</div>
-        {/* More celebration icons */}
-        <div className="floater">♡</div>
-        <div className="floater">💕</div>
-        <div className="floater">✨</div>
-        <div className="floater">🥂</div>
-        <div className="floater">💍</div>
-        <div className="floater">♡</div>
-        <div className="floater">💕</div>
-        <div className="floater">✨</div>
-        <div className="floater">🥂</div>
-        <div className="floater">💍</div>
+        <div className="floater sparkle">⭐</div>
+        <div className="floater sparkle">🌟</div>
+        <div className="floater sparkle">⭐</div>
+        <div className="floater sparkle">🌟</div>
+        <div className="floater sparkle">⭐</div>
+        {/* More Irish icons */}
+        <div className="floater">🍀</div>
+        <div className="floater">🍺</div>
+        <div className="floater">☘️</div>
+        <div className="floater">🥃</div>
+        <div className="floater">🇮🇪</div>
+        <div className="floater">🍀</div>
+        <div className="floater">🎉</div>
+        <div className="floater">☘️</div>
+        <div className="floater">🍺</div>
+        <div className="floater">🥃</div>
         {/* More sparkles */}
-        <div className="floater sparkle">💛</div>
-        <div className="floater sparkle">✨</div>
-        <div className="floater sparkle">💛</div>
-        <div className="floater sparkle">✨</div>
-        <div className="floater sparkle">💛</div>
+        <div className="floater sparkle">🌟</div>
+        <div className="floater sparkle">⭐</div>
+        <div className="floater sparkle">🌟</div>
+        <div className="floater sparkle">⭐</div>
+        <div className="floater sparkle">🌟</div>
       </div>
-      
+
       {/* Corner glow decoration */}
       <div className="corner-glow" aria-hidden="true"></div>
-      
+
       {/* Main content */}
       <div className="flex items-center justify-center min-h-screen px-4 py-12">
         {isCheckingSession ? (
@@ -138,12 +133,12 @@ function App() {
         )}
       </div>
 
-      {/* Bug report FAB — bottom-left, always visible */}
+      {/* Bug report FAB */}
       {createPortal(
         <div className="fixed left-6 bottom-6 sm:left-8 sm:bottom-8 z-[90]">
           <button
             onClick={() => setShowBugReport(true)}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm border border-primary/20 shadow-md text-text-light hover:bg-white hover:shadow-lg hover:text-primary transition-all duration-200 touch-manipulation"
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-card/80 backdrop-blur-sm border border-primary/30 shadow-md text-text-light hover:bg-card hover:shadow-lg hover:text-gold transition-all duration-200 touch-manipulation"
             title="Report a Bug"
             style={{ touchAction: 'manipulation' }}
             aria-label="Report a bug"
@@ -170,4 +165,3 @@ function App() {
 }
 
 export default App;
-

@@ -59,17 +59,17 @@ export function BugReportModal({ currentPage, reporterName, onClose }: BugReport
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-sm mx-4 p-6 rounded-2xl bg-card shadow-2xl"
+        className="relative w-full max-w-sm mx-4 p-6 rounded-2xl bg-card shadow-2xl border border-primary/20"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 text-text-light transition-colors"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-text-light transition-colors"
           aria-label="Close"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ export function BugReportModal({ currentPage, reporterName, onClose }: BugReport
 
         {submitted ? (
           <div className="py-6 text-center">
-            <div className="text-3xl mb-3">🐛</div>
+            <div className="text-3xl mb-3">☘️</div>
             <p className="text-text-dark font-medium">Thanks for reporting!</p>
             <p className="mt-1 text-sm text-text-light italic">We'll look into it shortly.</p>
           </div>
@@ -98,7 +98,7 @@ export function BugReportModal({ currentPage, reporterName, onClose }: BugReport
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. The gallery didn't load after I uploaded a photo..."
               rows={4}
-              className="w-full px-3 py-2.5 text-sm text-text-dark bg-white/60 border border-primary/20 rounded-xl resize-none outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-text-light/50"
+              className="w-full px-3 py-2.5 text-sm text-text-dark bg-background/60 border border-primary/25 rounded-xl resize-none outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15 transition-all placeholder:text-text-light/40"
             />
 
             {error && (
