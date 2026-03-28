@@ -24,6 +24,16 @@ export function getFullUrl(filePath: string) {
   return data?.publicUrl || '';
 }
 
+/** Generate a Supabase transform URL (used only as fallback for legacy uploads without thumbnails). */
+function getLegacyTransformUrl(filePath: string, width: number, height: number) {
+  const { data } = supabase.storage
+    .from('guest-media')
+    .getPublicUrl(filePath, {
+      transform: { width, height, resize: 'cover', format: 'origin' },
+    });
+  return data?.publicUrl || '';
+}
+
 /** Detect file type helpers */
 export const isVideoFile = (name: string) => /\.(mp4|mov|mkv|webm)$/i.test(name);
 export const isGifFile = (name: string) => /\.gif$/i.test(name);
@@ -67,12 +77,13 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
 
   const fullUrl = getFullUrl(upload.file_path);
 
-  // For images, use pre-generated thumbnail if available, otherwise fall back to full URL.
+  // For images, use pre-generated thumbnail if available.
+  // Legacy uploads without a thumbnail fall back to Supabase transform.
   // GIFs use original to preserve animation.
   const thumbnailUrl = useMemo(() => {
     if (isVideo || isGif) return fullUrl;
     if (upload.thumbnail_path) return getFullUrl(upload.thumbnail_path);
-    return fullUrl;
+    return getLegacyTransformUrl(upload.file_path, 300, 300);
   }, [upload.file_path, upload.thumbnail_path, fullUrl, isGif, isVideo]);
 
   const displayImageUrl = imageSrc ?? thumbnailUrl;
