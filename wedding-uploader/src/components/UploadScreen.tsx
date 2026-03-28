@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { convertToJpeg, formatFileSize } from '../utils/imageConverter';
+import { reencodeVideoTo720p } from '../utils/videoConverter';
 import { logAction } from '../utils/actionLog';
 
 // Add this new prop
@@ -131,8 +132,26 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         })
       );
 
-      // Combine converted images with original GIFs and videos (GIFs keep their animation)
-      const filesToUpload = [...convertedImages, ...gifs, ...videos];
+      // Re-encode videos to 720p to save storage space
+      let convertedVideos: File[] = [];
+      if (videos.length > 0) {
+        setSuccessMessage(`Re-encoding ${videos.length} video(s) to 720p...`);
+        convertedVideos = [];
+        for (const video of videos) {
+          try {
+            const converted = await reencodeVideoTo720p(video, (progress) => {
+              setSuccessMessage(progress.message);
+            });
+            convertedVideos.push(converted);
+          } catch (err) {
+            console.warn(`Video re-encoding failed for ${video.name}, uploading original:`, err);
+            convertedVideos.push(video);
+          }
+        }
+      }
+
+      // Combine converted images with original GIFs and re-encoded videos
+      const filesToUpload = [...convertedImages, ...gifs, ...convertedVideos];
 
       setSuccessMessage(`Uploading ${filesToUpload.length} file(s)...`);
 
@@ -238,7 +257,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             />
           </label>
           <p className="mt-2 text-xs text-text-light/60 text-center">
-            Images will be automatically converted to JPEG for faster uploads
+            Images converted to JPEG, videos re-encoded to 720p for faster uploads
           </p>
         </div>
 
