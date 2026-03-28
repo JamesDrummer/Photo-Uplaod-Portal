@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-import { convertToJpeg, formatFileSize } from '../utils/imageConverter';
+import { convertToJpeg, formatFileSize, generateThumbnail } from '../utils/imageConverter';
+import { reencodeVideoTo720p } from '../utils/videoConverter';
 import { logAction } from '../utils/actionLog';
 
 // Add this new prop
@@ -131,17 +132,36 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         })
       );
 
-      // Combine converted images with original GIFs and videos (GIFs keep their animation)
-      const filesToUpload = [...convertedImages, ...gifs, ...videos];
+      // Re-encode videos to 720p to save storage space
+      let convertedVideos: File[] = [];
+      if (videos.length > 0) {
+        setSuccessMessage(`Re-encoding ${videos.length} video(s) to 720p...`);
+        convertedVideos = [];
+        for (const video of videos) {
+          try {
+            const converted = await reencodeVideoTo720p(video, (progress) => {
+              setSuccessMessage(progress.message);
+            });
+            convertedVideos.push(converted);
+          } catch (err) {
+            console.warn(`Video re-encoding failed for ${video.name}, uploading original:`, err);
+            convertedVideos.push(video);
+          }
+        }
+      }
+
+      // Combine converted images with original GIFs and re-encoded videos
+      const filesToUpload = [...convertedImages, ...gifs, ...convertedVideos];
 
       setSuccessMessage(`Uploading ${filesToUpload.length} file(s)...`);
 
-      // Upload all files
+      // Upload all files (with thumbnails for images)
       const uploadPromises = filesToUpload.map(async (file) => {
         // Sanitize filename to prevent path traversal attacks
         const sanitizedName = sanitizeFilename(file.name);
         // Create a unique file path
-        const filePath = `public/${Date.now()}-${Math.random().toString(36).substring(7)}-${sanitizedName}`;
+        const uniquePrefix = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        const filePath = `public/${uniquePrefix}-${sanitizedName}`;
 
         // 1. Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
@@ -150,6 +170,25 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
         if (uploadError) {
           throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+
+        // 1b. Generate and upload thumbnail for images (not videos/GIFs)
+        const isImage = file.type.startsWith('image/') && !isGifFile(file);
+        let thumbnailPath: string | null = null;
+
+        if (isImage) {
+          const thumb = await generateThumbnail(file);
+          if (thumb) {
+            thumbnailPath = `public/${uniquePrefix}-${sanitizeFilename(thumb.name)}`;
+            const { error: thumbError } = await supabase.storage
+              .from('guest-media')
+              .upload(thumbnailPath, thumb);
+
+            if (thumbError) {
+              console.warn(`Thumbnail upload failed for ${file.name}:`, thumbError);
+              thumbnailPath = null;
+            }
+          }
         }
 
         // 2. Get the public URL
@@ -169,6 +208,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             file_name: sanitizedName,
             file_url: urlData.publicUrl,
             file_path: filePath,
+            thumbnail_path: thumbnailPath,
             uploader_name: sanitizeUserInput(uploaderName),
           });
 
@@ -238,7 +278,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             />
           </label>
           <p className="mt-2 text-xs text-text-light/60 text-center">
-            Images will be automatically converted to JPEG for faster uploads
+            Images converted to JPEG, videos re-encoded to 720p for faster uploads
           </p>
         </div>
 
