@@ -250,7 +250,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         <div className="stagger-3">
           <button
             type="submit"
-            disabled={isUploading}
+            disabled={isUploading || !files || files.length === 0}
             className="w-full py-3.5 px-6 font-bold text-white rounded-full btn-luxe tracking-wide"
           >
             {isUploading ? 'Uploading...' : 'Upload Files'}
