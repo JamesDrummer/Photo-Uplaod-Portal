@@ -1,7 +1,4 @@
 {
-  "buildCommand": "cd wedding-uploader && npm install && npm run build",
-  "outputDirectory": "wedding-uploader/dist",
-  "framework": "vite",
   "headers": [
     {
       "source": "/(.*)",
