@@ -96,21 +96,6 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         videos: videos.map(f => ({ name: f.name, type: f.type, size: f.size }))
       });
 
-      // Validate video sizes (400MB = ~10 min of HD video)
-      const MAX_VIDEO_SIZE = 400 * 1024 * 1024; // 400 MB
-      const oversizedVideos = videos.filter(v => v.size > MAX_VIDEO_SIZE);
-
-      if (oversizedVideos.length > 0) {
-        const videoNames = oversizedVideos.map(v =>
-          `${v.name} (${formatFileSize(v.size)})`
-        ).join(', ');
-        setError(
-          `The following video(s) exceed the 400MB limit (≈10 minutes): ${videoNames}. Please use shorter videos or compress them before uploading.`
-        );
-        setIsUploading(false);
-        return;
-      }
-
       // Convert images to JPEG (0.8 quality)
       if (images.length > 0) {
         setSuccessMessage(`Converting ${images.length} image(s) to JPEG...`);
@@ -148,6 +133,21 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             convertedVideos.push(video);
           }
         }
+      }
+
+      // Validate video sizes after re-encoding (400MB limit)
+      const MAX_VIDEO_SIZE = 400 * 1024 * 1024; // 400 MB
+      const oversizedVideos = convertedVideos.filter(v => v.size > MAX_VIDEO_SIZE);
+
+      if (oversizedVideos.length > 0) {
+        const videoNames = oversizedVideos.map(v =>
+          `${v.name} (${formatFileSize(v.size)})`
+        ).join(', ');
+        setError(
+          `The following video(s) still exceed the 400MB limit after re-encoding: ${videoNames}. Please use shorter videos or compress them before uploading.`
+        );
+        setIsUploading(false);
+        return;
       }
 
       // Combine converted images with original GIFs and re-encoded videos
