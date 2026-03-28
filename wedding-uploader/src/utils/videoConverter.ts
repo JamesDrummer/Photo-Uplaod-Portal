@@ -52,7 +52,7 @@ function getVideoResolution(file: File): Promise<{ width: number; height: number
 }
 
 export interface VideoConvertProgress {
-  stage: 'loading' | 'analyzing' | 'converting' | 'done';
+  stage: 'loading' | 'analyzing' | 'converting' | 'done' | 'skipped';
   message: string;
   /** 0-100 percentage, only available during 'converting' stage */
   percent?: number;
@@ -64,11 +64,13 @@ export interface VideoConvertProgress {
  *
  * @param file - The original video file
  * @param onProgress - Callback for progress updates
- * @returns The re-encoded video file (MP4) or the original if already small enough
+ * @param signal - AbortSignal to cancel the re-encoding and upload original instead
+ * @returns The re-encoded video file (MP4) or the original if already small enough / skipped
  */
 export async function reencodeVideoTo720p(
   file: File,
-  onProgress?: (progress: VideoConvertProgress) => void
+  onProgress?: (progress: VideoConvertProgress) => void,
+  signal?: AbortSignal,
 ): Promise<File> {
   const report = (p: VideoConvertProgress) => onProgress?.(p);
 
@@ -92,6 +94,12 @@ export async function reencodeVideoTo720p(
   if (maxDimension <= 720) {
     console.log(`Video ${file.name} is already ≤720p, skipping re-encode`);
     report({ stage: 'done', message: `${file.name} is already ≤720p — no conversion needed` });
+    return file;
+  }
+
+  // Check if already cancelled before starting heavy work
+  if (signal?.aborted) {
+    report({ stage: 'skipped', message: `Skipped re-encoding ${file.name}` });
     return file;
   }
 
@@ -143,23 +151,42 @@ export async function reencodeVideoTo720p(
   // Write input file to FFmpeg virtual filesystem
   await instance.writeFile(inputName, await fetchFile(file));
 
-  // Re-encode to 720p H.264 with reasonable quality
-  // -crf 28: Good quality/size balance (higher = smaller but lower quality)
-  // -preset fast: Faster encoding (important for browser)
-  // -vf scale: Resize to target dimensions
-  // -movflags +faststart: Optimize for web streaming
-  await instance.exec([
-    '-i', inputName,
-    '-vf', `scale=${targetWidth}:${targetHeight}`,
-    '-c:v', 'libx264',
-    '-crf', '28',
-    '-preset', 'fast',
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    '-movflags', '+faststart',
-    '-y',
-    outputName,
-  ]);
+  // Listen for abort signal to terminate FFmpeg
+  const onAbort = () => { instance.terminate(); };
+  signal?.addEventListener('abort', onAbort, { once: true });
+
+  let aborted = false;
+  try {
+    // Re-encode to 720p H.264
+    // -crf 32: Prioritises speed/smaller size (slightly lower quality, much faster)
+    // -preset ultrafast: Fastest possible encoding (critical for browser WASM)
+    // -vf scale: Resize to target dimensions
+    // -movflags +faststart: Optimize for web streaming
+    await instance.exec([
+      '-i', inputName,
+      '-vf', `scale=${targetWidth}:${targetHeight}`,
+      '-c:v', 'libx264',
+      '-crf', '32',
+      '-preset', 'ultrafast',
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-movflags', '+faststart',
+      '-y',
+      outputName,
+    ]);
+  } catch {
+    aborted = true;
+  } finally {
+    signal?.removeEventListener('abort', onAbort);
+  }
+
+  // If aborted, FFmpeg instance is terminated — need to reload next time
+  if (aborted || signal?.aborted) {
+    ffmpeg = null;
+    console.log(`Re-encoding cancelled for ${file.name}, uploading original`);
+    report({ stage: 'skipped', message: `Skipped re-encoding ${file.name} — uploading original` });
+    return file;
+  }
 
   // Read the output file
   const data = await instance.readFile(outputName);

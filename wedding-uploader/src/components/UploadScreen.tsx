@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { convertToJpeg, formatFileSize, generateThumbnail } from '../utils/imageConverter';
@@ -13,9 +13,11 @@ interface UploadScreenProps {
 
 export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isReencoding, setIsReencoding] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [files, setFiles] = useState<FileList | null>(null);
+  const reencodingAbortRef = useRef<AbortController | null>(null);
 
   // Helper function to sanitize filename to prevent path traversal attacks
   const sanitizeFilename = (filename: string): string => {
@@ -135,19 +137,24 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
       // Re-encode videos to 720p to save storage space
       let convertedVideos: File[] = [];
       if (videos.length > 0) {
+        const abortController = new AbortController();
+        reencodingAbortRef.current = abortController;
+        setIsReencoding(true);
         setSuccessMessage(`Re-encoding ${videos.length} video(s) to 720p...`);
         convertedVideos = [];
         for (const video of videos) {
           try {
             const converted = await reencodeVideoTo720p(video, (progress) => {
               setSuccessMessage(progress.message);
-            });
+            }, abortController.signal);
             convertedVideos.push(converted);
           } catch (err) {
             console.warn(`Video re-encoding failed for ${video.name}, uploading original:`, err);
             convertedVideos.push(video);
           }
         }
+        setIsReencoding(false);
+        reencodingAbortRef.current = null;
       }
 
       // Combine converted images with original GIFs and re-encoded videos
@@ -285,6 +292,15 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         {error && <p className="text-sm text-red-400 text-center">{error}</p>}
         {successMessage && (
           <p className="text-sm text-gold italic text-center">{successMessage}</p>
+        )}
+        {isReencoding && (
+          <button
+            type="button"
+            onClick={() => reencodingAbortRef.current?.abort()}
+            className="w-full py-2 px-4 text-sm text-text-light/80 border border-primary/25 rounded-full hover:bg-background/60 transition-colors"
+          >
+            Skip re-encoding — upload original
+          </button>
         )}
 
         <div className="stagger-3">
