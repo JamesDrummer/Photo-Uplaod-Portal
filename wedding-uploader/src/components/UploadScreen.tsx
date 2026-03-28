@@ -147,9 +147,8 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             }
             convertedVideos.push(converted);
           } catch (err: any) {
-            console.warn(`Video re-encoding failed for ${video.name}, uploading original:`, err);
-            setSuccessMessage(`Re-encoding failed for ${video.name} — uploading original (${formatFileSize(video.size)})`);
-            convertedVideos.push(video);
+            console.warn(`Video re-encoding failed for ${video.name}:`, err);
+            throw new Error(`Could not process ${video.name}. Please try again or use a shorter video.`);
           }
         }
       }

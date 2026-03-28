@@ -79,9 +79,7 @@ export async function reencodeVideoTo720p(
   try {
     resolution = await getVideoResolution(file);
   } catch {
-    // Can't read metadata — upload original
-    console.warn(`Could not read video metadata for ${file.name}, uploading original`);
-    return file;
+    throw new Error(`Could not read video metadata for ${file.name}`);
   }
 
   const { width, height } = resolution;
