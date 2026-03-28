@@ -1,5 +1,6 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL, fetchFile } from '@ffmpeg/util';
+import { withRetry } from './retry';
 
 let ffmpeg: FFmpeg | null = null;
 
@@ -20,11 +21,24 @@ async function getFFmpeg(onLog?: (message: string) => void): Promise<FFmpeg> {
   }
 
   // Load FFmpeg WASM from CDN with multi-threaded support
+  // These downloads can be large (~31MB for the WASM binary) and flaky on mobile,
+  // so we retry each fetch independently with exponential backoff.
   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+
+  const [coreURL, wasmURL] = await Promise.all([
+    withRetry(
+      () => toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      { maxAttempts: 3, label: 'fetch FFmpeg core JS from CDN' },
+    ),
+    withRetry(
+      () => toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      { maxAttempts: 3, label: 'fetch FFmpeg WASM binary from CDN' },
+    ),
+  ]).catch(() => {
+    throw new Error('Could not download the video encoder. Please check your internet connection and try again.');
   });
+
+  await ffmpeg.load({ coreURL, wasmURL });
 
   return ffmpeg;
 }
@@ -68,7 +82,7 @@ export interface VideoConvertProgress {
  */
 export async function reencodeVideoTo720p(
   file: File,
-  onProgress?: (progress: VideoConvertProgress) => void
+  onProgress?: (progress: VideoConvertProgress) => void,
 ): Promise<File> {
   const report = (p: VideoConvertProgress) => onProgress?.(p);
 
@@ -79,9 +93,7 @@ export async function reencodeVideoTo720p(
   try {
     resolution = await getVideoResolution(file);
   } catch {
-    // Can't read metadata — upload original
-    console.warn(`Could not read video metadata for ${file.name}, uploading original`);
-    return file;
+    throw new Error(`Could not read video metadata for ${file.name}`);
   }
 
   const { width, height } = resolution;
@@ -143,17 +155,17 @@ export async function reencodeVideoTo720p(
   // Write input file to FFmpeg virtual filesystem
   await instance.writeFile(inputName, await fetchFile(file));
 
-  // Re-encode to 720p H.264 with reasonable quality
-  // -crf 28: Good quality/size balance (higher = smaller but lower quality)
-  // -preset fast: Faster encoding (important for browser)
+  // Re-encode to 720p H.264
+  // -crf 32: Prioritises speed/smaller size (slightly lower quality, much faster)
+  // -preset ultrafast: Fastest possible encoding (critical for browser WASM)
   // -vf scale: Resize to target dimensions
   // -movflags +faststart: Optimize for web streaming
   await instance.exec([
     '-i', inputName,
     '-vf', `scale=${targetWidth}:${targetHeight}`,
     '-c:v', 'libx264',
-    '-crf', '28',
-    '-preset', 'fast',
+    '-crf', '32',
+    '-preset', 'ultrafast',
     '-c:a', 'aac',
     '-b:a', '128k',
     '-movflags', '+faststart',

@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { convertToJpeg, formatFileSize, generateThumbnail } from '../utils/imageConverter';
 import { reencodeVideoTo720p } from '../utils/videoConverter';
 import { logAction } from '../utils/actionLog';
+import { withRetry } from '../utils/retry';
 
 // Add this new prop
 interface UploadScreenProps {
@@ -127,10 +128,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             const converted = await reencodeVideoTo720p(video, (progress) => {
               setSuccessMessage(progress.message);
             });
+            if (converted !== video) {
+              setSuccessMessage(`Re-encoded ${video.name}: ${formatFileSize(video.size)} → ${formatFileSize(converted.size)}`);
+            }
             convertedVideos.push(converted);
-          } catch (err) {
-            console.warn(`Video re-encoding failed for ${video.name}, uploading original:`, err);
-            convertedVideos.push(video);
+          } catch (err: any) {
+            console.warn(`Video re-encoding failed for ${video.name}:`, err);
+            throw new Error(`Could not process ${video.name}. Please try again or use a shorter video.`);
           }
         }
       }
@@ -163,14 +167,15 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         const uniquePrefix = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
         const filePath = `public/${uniquePrefix}-${sanitizedName}`;
 
-        // 1. Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from('guest-media') // Our bucket name
-          .upload(filePath, file);
-
-        if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`);
-        }
+        // 1. Upload to Supabase Storage (with retry for transient network failures)
+        await withRetry(async () => {
+          const { error: uploadErr } = await supabase.storage
+            .from('guest-media')
+            .upload(filePath, file);
+          if (uploadErr) throw uploadErr;
+        }, { maxAttempts: 3, label: `file upload for ${file.name}` }).catch(() => {
+          throw new Error(`Upload failed for ${file.name} (${formatFileSize(file.size)}). Please check your connection and try again.`);
+        });
 
         // 1b. Generate and upload thumbnail for images (not videos/GIFs)
         const isImage = file.type.startsWith('image/') && !isGifFile(file);
@@ -180,12 +185,15 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
           const thumb = await generateThumbnail(file);
           if (thumb) {
             thumbnailPath = `public/${uniquePrefix}-${sanitizeFilename(thumb.name)}`;
-            const { error: thumbError } = await supabase.storage
-              .from('guest-media')
-              .upload(thumbnailPath, thumb);
-
-            if (thumbError) {
-              console.warn(`Thumbnail upload failed for ${file.name}:`, thumbError);
+            try {
+              await withRetry(async () => {
+                const { error: thumbError } = await supabase.storage
+                  .from('guest-media')
+                  .upload(thumbnailPath!, thumb);
+                if (thumbError) throw thumbError;
+              }, { maxAttempts: 3, label: `thumbnail upload for ${file.name}` });
+            } catch {
+              console.warn(`Thumbnail upload failed for ${file.name} after retries`);
               thumbnailPath = null;
             }
           }
@@ -202,19 +210,20 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
         // 3. Log the file in our 'uploads' database table
         // Use sanitized names for database to prevent XSS
-        const { error: dbError } = await supabase
-          .from('uploads')
-          .insert({
-            file_name: sanitizedName,
-            file_url: urlData.publicUrl,
-            file_path: filePath,
-            thumbnail_path: thumbnailPath,
-            uploader_name: sanitizeUserInput(uploaderName),
-          });
-
-        if (dbError) {
-          throw new Error(`Database logging failed: ${dbError.message}`);
-        }
+        await withRetry(async () => {
+          const { error: dbError } = await supabase
+            .from('uploads')
+            .insert({
+              file_name: sanitizedName,
+              file_url: urlData.publicUrl,
+              file_path: filePath,
+              thumbnail_path: thumbnailPath,
+              uploader_name: sanitizeUserInput(uploaderName),
+            });
+          if (dbError) throw dbError;
+        }, { maxAttempts: 3, label: `database insert for ${file.name}` }).catch(() => {
+          throw new Error(`Could not save ${file.name} to the gallery. The file was uploaded but the record failed to save. Please try again.`);
+        });
 
         return file.name;
       });
@@ -278,7 +287,9 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             />
           </label>
           <p className="mt-2 text-xs text-text-light/60 text-center">
-            Images converted to JPEG, videos re-encoded to 720p for faster uploads
+            Images converted to JPEG, videos re-encoded to 720p for faster uploads.
+            <br />
+            Videos can take a while to process - longer videos may need a few minutes, so please be patient!
           </p>
         </div>
 
