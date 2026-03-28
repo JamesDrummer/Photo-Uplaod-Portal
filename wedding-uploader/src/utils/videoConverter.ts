@@ -1,5 +1,6 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL, fetchFile } from '@ffmpeg/util';
+import { withRetry } from './retry';
 
 let ffmpeg: FFmpeg | null = null;
 
@@ -20,11 +21,24 @@ async function getFFmpeg(onLog?: (message: string) => void): Promise<FFmpeg> {
   }
 
   // Load FFmpeg WASM from CDN with multi-threaded support
+  // These downloads can be large (~31MB for the WASM binary) and flaky on mobile,
+  // so we retry each fetch independently with exponential backoff.
   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+
+  const [coreURL, wasmURL] = await Promise.all([
+    withRetry(
+      () => toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      { maxAttempts: 3, label: 'fetch FFmpeg core JS from CDN' },
+    ),
+    withRetry(
+      () => toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      { maxAttempts: 3, label: 'fetch FFmpeg WASM binary from CDN' },
+    ),
+  ]).catch(() => {
+    throw new Error('Could not download the video encoder. Please check your internet connection and try again.');
   });
+
+  await ffmpeg.load({ coreURL, wasmURL });
 
   return ffmpeg;
 }

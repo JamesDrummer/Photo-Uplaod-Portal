@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { convertToJpeg, formatFileSize, generateThumbnail } from '../utils/imageConverter';
 import { reencodeVideoTo720p } from '../utils/videoConverter';
 import { logAction } from '../utils/actionLog';
+import { withRetry } from '../utils/retry';
 
 // Add this new prop
 interface UploadScreenProps {
@@ -167,29 +168,14 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         const filePath = `public/${uniquePrefix}-${sanitizedName}`;
 
         // 1. Upload to Supabase Storage (with retry for transient network failures)
-        let uploadError: Error | null = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          const result = await supabase.storage
+        await withRetry(async () => {
+          const { error: uploadErr } = await supabase.storage
             .from('guest-media')
             .upload(filePath, file);
-
-          if (!result.error) {
-            uploadError = null;
-            break;
-          }
-
-          uploadError = result.error;
-          console.warn(`Upload attempt ${attempt + 1} failed for ${file.name} (${formatFileSize(file.size)}):`, result.error.message);
-
-          if (attempt < 2) {
-            // Wait before retrying (1s, then 3s)
-            await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
-          }
-        }
-
-        if (uploadError) {
-          throw new Error(`Upload failed for ${file.name} (${formatFileSize(file.size)}): ${uploadError.message}`);
-        }
+          if (uploadErr) throw uploadErr;
+        }, { maxAttempts: 3, label: `file upload for ${file.name}` }).catch(() => {
+          throw new Error(`Upload failed for ${file.name} (${formatFileSize(file.size)}). Please check your connection and try again.`);
+        });
 
         // 1b. Generate and upload thumbnail for images (not videos/GIFs)
         const isImage = file.type.startsWith('image/') && !isGifFile(file);
@@ -199,12 +185,15 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
           const thumb = await generateThumbnail(file);
           if (thumb) {
             thumbnailPath = `public/${uniquePrefix}-${sanitizeFilename(thumb.name)}`;
-            const { error: thumbError } = await supabase.storage
-              .from('guest-media')
-              .upload(thumbnailPath, thumb);
-
-            if (thumbError) {
-              console.warn(`Thumbnail upload failed for ${file.name}:`, thumbError);
+            try {
+              await withRetry(async () => {
+                const { error: thumbError } = await supabase.storage
+                  .from('guest-media')
+                  .upload(thumbnailPath!, thumb);
+                if (thumbError) throw thumbError;
+              }, { maxAttempts: 3, label: `thumbnail upload for ${file.name}` });
+            } catch {
+              console.warn(`Thumbnail upload failed for ${file.name} after retries`);
               thumbnailPath = null;
             }
           }
@@ -221,19 +210,20 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
         // 3. Log the file in our 'uploads' database table
         // Use sanitized names for database to prevent XSS
-        const { error: dbError } = await supabase
-          .from('uploads')
-          .insert({
-            file_name: sanitizedName,
-            file_url: urlData.publicUrl,
-            file_path: filePath,
-            thumbnail_path: thumbnailPath,
-            uploader_name: sanitizeUserInput(uploaderName),
-          });
-
-        if (dbError) {
-          throw new Error(`Database logging failed: ${dbError.message}`);
-        }
+        await withRetry(async () => {
+          const { error: dbError } = await supabase
+            .from('uploads')
+            .insert({
+              file_name: sanitizedName,
+              file_url: urlData.publicUrl,
+              file_path: filePath,
+              thumbnail_path: thumbnailPath,
+              uploader_name: sanitizeUserInput(uploaderName),
+            });
+          if (dbError) throw dbError;
+        }, { maxAttempts: 3, label: `database insert for ${file.name}` }).catch(() => {
+          throw new Error(`Could not save ${file.name} to the gallery. The file was uploaded but the record failed to save. Please try again.`);
+        });
 
         return file.name;
       });

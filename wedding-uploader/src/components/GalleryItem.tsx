@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAction } from '../utils/actionLog';
+import { withRetry } from '../utils/retry';
 
 export type Upload = {
   id: number;
@@ -130,7 +131,10 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
                   onFileMissing(upload.id);
                 }
                 try {
-                  await supabase.from('uploads').delete().eq('id', upload.id);
+                  await withRetry(async () => {
+                    const { error } = await supabase.from('uploads').delete().eq('id', upload.id);
+                    if (error) throw error;
+                  }, { maxAttempts: 2, label: `delete orphaned video record ${upload.id}`, silent: true });
                   console.log('Deleted orphaned record:', upload.id);
                 } catch (deleteError) {
                   console.error('Failed to delete orphaned record:', deleteError);

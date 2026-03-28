@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 import { GalleryItem, Upload } from './GalleryItem';
 import { Lightbox } from './Lightbox';
 import { logAction } from '../utils/actionLog';
+import { withRetry } from '../utils/retry';
 
 interface GalleryScreenProps {
   onShowUpload: () => void;
@@ -28,15 +29,19 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
 
     try {
       while (true) {
-        const { data, error } = await supabase.storage
-          .from('guest-media')
-          .list(folderPath, {
-            limit: PAGE_SIZE,
-            offset,
-          });
+        const data = await withRetry(async () => {
+          const result = await supabase.storage
+            .from('guest-media')
+            .list(folderPath, {
+              limit: PAGE_SIZE,
+              offset,
+            });
+          if (result.error) throw result.error;
+          return result.data;
+        }, { maxAttempts: 3, label: `list storage folder ${folderPath}`, silent: true });
 
-        if (error) {
-          console.warn(`Could not list storage folder ${folderPath}; keeping its uploads visible.`, error);
+        if (!data) {
+          console.warn(`Could not list storage folder ${folderPath} after retries; keeping its uploads visible.`);
           return null;
         }
 
@@ -134,7 +139,10 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
     await Promise.all(
       orphanedIds.map(async (id) => {
         try {
-          await supabase.from('uploads').delete().eq('id', id);
+          await withRetry(async () => {
+            const { error } = await supabase.from('uploads').delete().eq('id', id);
+            if (error) throw error;
+          }, { maxAttempts: 2, label: `delete orphaned record ${id}`, silent: true });
           console.log(`Deleted orphaned record: ${id}`);
         } catch (deleteError) {
           console.error(`Failed to delete orphaned record ${id}:`, deleteError);
@@ -151,15 +159,20 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const { data, error } = await supabase
-          .from('uploads')
-          .select('id, file_path, file_name, thumbnail_path')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Supabase error:', error);
+        let data: Upload[] | null = null;
+        try {
+          data = await withRetry(async () => {
+            const result = await supabase
+              .from('uploads')
+              .select('id, file_path, file_name, thumbnail_path')
+              .order('created_at', { ascending: false });
+            if (result.error) throw result.error;
+            return result.data;
+          }, { maxAttempts: 3, label: 'fetch gallery uploads' });
+        } catch (fetchErr) {
+          console.error('Supabase error:', fetchErr);
           if (isActive) {
-            setError(error.message);
+            setError('Could not load the gallery. Please check your connection and try again.');
           }
           return;
         }
