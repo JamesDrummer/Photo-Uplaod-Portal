@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { GalleryItem, Upload } from './GalleryItem';
+import { Lightbox } from './Lightbox';
 import { logAction } from '../utils/actionLog';
 
 interface GalleryScreenProps {
@@ -13,6 +14,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // Remove upload from list when file is missing
   const handleFileMissing = (uploadId: number) => {
@@ -252,6 +254,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
                 upload={upload}
                 index={index}
                 onFileMissing={handleFileMissing}
+                onOpenLightbox={() => setLightboxIndex(index)}
               />
             ))}
           </div>
@@ -283,6 +286,15 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
           </button>
         </div>,
         document.body
+      )}
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          uploads={uploads}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+        />
       )}
     </>
   );
