@@ -10,7 +10,7 @@ export default defineConfig({
     headers: {
       // Required for FFmpeg.wasm SharedArrayBuffer support
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
     },
   },
   optimizeDeps: {
