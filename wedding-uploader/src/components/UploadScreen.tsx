@@ -142,9 +142,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             const converted = await reencodeVideoTo720p(video, (progress) => {
               setSuccessMessage(progress.message);
             });
+            if (converted !== video) {
+              setSuccessMessage(`Re-encoded ${video.name}: ${formatFileSize(video.size)} → ${formatFileSize(converted.size)}`);
+            }
             convertedVideos.push(converted);
-          } catch (err) {
+          } catch (err: any) {
             console.warn(`Video re-encoding failed for ${video.name}, uploading original:`, err);
+            setSuccessMessage(`Re-encoding failed for ${video.name} — uploading original (${formatFileSize(video.size)})`);
             convertedVideos.push(video);
           }
         }
@@ -163,13 +167,29 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
         const uniquePrefix = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
         const filePath = `public/${uniquePrefix}-${sanitizedName}`;
 
-        // 1. Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from('guest-media') // Our bucket name
-          .upload(filePath, file);
+        // 1. Upload to Supabase Storage (with retry for transient network failures)
+        let uploadError: Error | null = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const result = await supabase.storage
+            .from('guest-media')
+            .upload(filePath, file);
+
+          if (!result.error) {
+            uploadError = null;
+            break;
+          }
+
+          uploadError = result.error;
+          console.warn(`Upload attempt ${attempt + 1} failed for ${file.name} (${formatFileSize(file.size)}):`, result.error.message);
+
+          if (attempt < 2) {
+            // Wait before retrying (1s, then 3s)
+            await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+          }
+        }
 
         if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`);
+          throw new Error(`Upload failed for ${file.name} (${formatFileSize(file.size)}): ${uploadError.message}`);
         }
 
         // 1b. Generate and upload thumbnail for images (not videos/GIFs)
