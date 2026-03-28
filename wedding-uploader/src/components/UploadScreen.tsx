@@ -280,7 +280,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
           <p className="mt-2 text-xs text-text-light/60 text-center">
             Images converted to JPEG, videos re-encoded to 720p for faster uploads.
             <br />
-            Videos can take a while to process — longer videos may need a few minutes, so please be patient!
+            Videos can take a while to process - longer videos may need a few minutes, so please be patient!
           </p>
         </div>
 
