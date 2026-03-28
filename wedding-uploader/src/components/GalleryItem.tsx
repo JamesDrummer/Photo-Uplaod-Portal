@@ -177,7 +177,10 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
                   onFileMissing(upload.id);
                 }
                 try {
-                  await supabase.from('uploads').delete().eq('id', upload.id);
+                  await withRetry(async () => {
+                    const { error } = await supabase.from('uploads').delete().eq('id', upload.id);
+                    if (error) throw error;
+                  }, { maxAttempts: 2, label: `delete orphaned image record ${upload.id}`, silent: true });
                   console.log('Deleted orphaned record:', upload.id);
                 } catch (deleteError) {
                   console.error('Failed to delete orphaned record:', deleteError);
