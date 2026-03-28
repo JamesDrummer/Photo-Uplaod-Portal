@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-import { convertToJpeg, formatFileSize } from '../utils/imageConverter';
+import { convertToJpeg, formatFileSize, generateThumbnail } from '../utils/imageConverter';
 import { reencodeVideoTo720p } from '../utils/videoConverter';
 import { logAction } from '../utils/actionLog';
 
@@ -155,12 +155,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
       setSuccessMessage(`Uploading ${filesToUpload.length} file(s)...`);
 
-      // Upload all files
+      // Upload all files (with thumbnails for images)
       const uploadPromises = filesToUpload.map(async (file) => {
         // Sanitize filename to prevent path traversal attacks
         const sanitizedName = sanitizeFilename(file.name);
         // Create a unique file path
-        const filePath = `public/${Date.now()}-${Math.random().toString(36).substring(7)}-${sanitizedName}`;
+        const uniquePrefix = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        const filePath = `public/${uniquePrefix}-${sanitizedName}`;
 
         // 1. Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
@@ -169,6 +170,25 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
         if (uploadError) {
           throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+
+        // 1b. Generate and upload thumbnail for images (not videos/GIFs)
+        const isImage = file.type.startsWith('image/') && !isGifFile(file);
+        let thumbnailPath: string | null = null;
+
+        if (isImage) {
+          const thumb = await generateThumbnail(file);
+          if (thumb) {
+            thumbnailPath = `public/${uniquePrefix}-${sanitizeFilename(thumb.name)}`;
+            const { error: thumbError } = await supabase.storage
+              .from('guest-media')
+              .upload(thumbnailPath, thumb);
+
+            if (thumbError) {
+              console.warn(`Thumbnail upload failed for ${file.name}:`, thumbError);
+              thumbnailPath = null;
+            }
+          }
         }
 
         // 2. Get the public URL
@@ -188,6 +208,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
             file_name: sanitizedName,
             file_url: urlData.publicUrl,
             file_path: filePath,
+            thumbnail_path: thumbnailPath,
             uploader_name: sanitizeUserInput(uploaderName),
           });
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Upload, getFullUrl, getTransformUrl, isVideoFile, isHeicFile } from './GalleryItem';
+import { Upload, getFullUrl, isVideoFile } from './GalleryItem';
 
 interface LightboxProps {
   uploads: Upload[];
@@ -11,9 +11,6 @@ interface LightboxProps {
 
 /** Resolve the display URL for a given upload in the lightbox. */
 function getLightboxUrl(upload: Upload) {
-  if (isHeicFile(upload.file_name)) {
-    return getTransformUrl(upload.file_path, 600, 600);
-  }
   return getFullUrl(upload.file_path);
 }
 

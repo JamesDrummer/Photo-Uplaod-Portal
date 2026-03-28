@@ -6,6 +6,7 @@ export type Upload = {
   id: number;
   file_path: string;
   file_name: string;
+  thumbnail_path?: string | null;
 };
 
 interface GalleryItemProps {
@@ -13,16 +14,6 @@ interface GalleryItemProps {
   index: number;
   onFileMissing?: (uploadId: number) => void;
   onOpenLightbox?: () => void;
-}
-
-/** Generate a Supabase transform URL for an image upload. */
-export function getTransformUrl(filePath: string, width: number, height: number) {
-  const { data } = supabase.storage
-    .from('guest-media')
-    .getPublicUrl(filePath, {
-      transform: { width, height, resize: 'cover', format: 'origin' },
-    });
-  return data?.publicUrl || '';
 }
 
 /** Get the full (untransformed) public URL for a file. */
@@ -36,7 +27,6 @@ export function getFullUrl(filePath: string) {
 /** Detect file type helpers */
 export const isVideoFile = (name: string) => /\.(mp4|mov|mkv|webm)$/i.test(name);
 export const isGifFile = (name: string) => /\.gif$/i.test(name);
-export const isHeicFile = (name: string) => /\.heic$/i.test(name);
 
 export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: GalleryItemProps) {
   const [hasError, setHasError] = useState(false);
@@ -77,11 +67,13 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
 
   const fullUrl = getFullUrl(upload.file_path);
 
-  // For images, generate a 300x300 thumbnail. For GIFs, use original to preserve animation.
+  // For images, use pre-generated thumbnail if available, otherwise fall back to full URL.
+  // GIFs use original to preserve animation.
   const thumbnailUrl = useMemo(() => {
     if (isVideo || isGif) return fullUrl;
-    return getTransformUrl(upload.file_path, 300, 300);
-  }, [upload.file_path, fullUrl, isGif, isVideo]);
+    if (upload.thumbnail_path) return getFullUrl(upload.thumbnail_path);
+    return fullUrl;
+  }, [upload.file_path, upload.thumbnail_path, fullUrl, isGif, isVideo]);
 
   const displayImageUrl = imageSrc ?? thumbnailUrl;
 

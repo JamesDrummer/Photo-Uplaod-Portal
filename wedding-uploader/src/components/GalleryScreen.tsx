@@ -153,7 +153,7 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
       try {
         const { data, error } = await supabase
           .from('uploads')
-          .select('id, file_path, file_name')
+          .select('id, file_path, file_name, thumbnail_path')
           .order('created_at', { ascending: false });
 
         if (error) {
