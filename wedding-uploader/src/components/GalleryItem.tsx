@@ -114,7 +114,7 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
               }`}
               muted
               playsInline
-              preload="none"
+              preload="metadata"
               poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23374151'/%3E%3Cstop offset='100%25' style='stop-color:%231f2937'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='300' height='300'/%3E%3C/svg%3E"
               onLoadedMetadata={(e) => {
                 e.currentTarget.currentTime = 0.1;
@@ -135,7 +135,7 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
               }}
             />
             {/* Play button overlay */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 pointer-events-none">
               <svg
                 className="w-16 h-16 text-white drop-shadow-lg"
                 fill="currentColor"
