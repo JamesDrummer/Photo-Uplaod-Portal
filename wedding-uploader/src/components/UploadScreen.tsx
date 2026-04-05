@@ -231,7 +231,7 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
       const uploadedFiles = await Promise.all(uploadPromises);
       logAction('upload_success', `${uploadedFiles.length} file(s) uploaded`);
       setSuccessMessage(
-        `Successfully uploaded ${uploadedFiles.length} file(s)! Sláinte!`
+        `Thank you — ${uploadedFiles.length} ${uploadedFiles.length === 1 ? 'memory' : 'memories'} shared with us.`
       );
       setFiles(null);
       // Reset the file input visually
@@ -248,14 +248,14 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
     <>
     <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
       <div className="text-center stagger-1">
-        <h1 className="text-5xl text-text-dark font-display flourish">
-          Share the Craic
+        <h1 className="text-5xl text-text-dark font-display font-semibold flourish">
+          Share a Memory
         </h1>
-        <p className="mt-6 text-lg text-gold font-celtic text-2xl">
-          Welcome, {uploaderName}!
+        <p className="mt-6 text-4xl text-primary font-script">
+          Welcome, {uploaderName}
         </p>
-        <p className="mt-1 text-text-light italic text-sm">
-          Upload your best moments from the stag do! ☘️
+        <p className="mt-2 text-text-light italic text-sm font-display">
+          Upload your favourite moments from our wedding day
         </p>
       </div>
 

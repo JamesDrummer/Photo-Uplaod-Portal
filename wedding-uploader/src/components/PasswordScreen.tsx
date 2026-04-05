@@ -61,15 +61,17 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   return (
     <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
       <div className="text-center stagger-1">
-        <h1 className="text-5xl text-text-dark font-display flourish">
-          <span className="font-celtic text-gold">The Lads'</span>{' '}
-          Stag Do
-        </h1>
-        <p className="mt-3 text-sm font-celtic text-primary tracking-wide">
-          ☘️ Ireland Edition ☘️
+        <p className="mb-2 text-[0.7rem] text-text-light uppercase tracking-[0.3em]">
+          Together with their families
         </p>
-        <p className="mt-4 text-text-light italic">
-          Enter your name and the event password to share your photos
+        <h1 className="text-5xl text-text-dark font-display font-semibold flourish leading-tight">
+          Danielle <span className="font-script text-gold text-6xl align-middle">&amp;</span> Marcus
+        </h1>
+        <p className="mt-3 text-sm text-primary tracking-wide italic font-display">
+          11 April 2026
+        </p>
+        <p className="mt-4 text-text-light italic font-display">
+          Enter your name and the event password to share your memories with us
         </p>
       </div>
 
@@ -123,7 +125,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
               setError('Security check failed. Please try again.');
             }}
             onExpire={() => setCaptchaToken(null)}
-            theme="dark"
+            theme="light"
           />
         </div>
 
@@ -135,7 +137,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             disabled={!captchaToken}
             className="w-full py-3.5 px-6 font-bold text-white rounded-full btn-luxe tracking-wide"
           >
-            Enter the Craic
+            Enter
           </button>
         </div>
       </form>

@@ -78,42 +78,42 @@ function App() {
 
   return (
     <>
-      {/* Floating Irish celebration elements */}
+      {/* Floating botanical wedding elements */}
       <div className="floating-elements" aria-hidden="true">
-        {/* Shamrocks and Irish icons */}
-        <div className="floater">☘️</div>
-        <div className="floater">🍺</div>
-        <div className="floater">🇮🇪</div>
-        <div className="floater">🥃</div>
-        <div className="floater">☘️</div>
-        <div className="floater">🍀</div>
-        <div className="floater">🍺</div>
-        <div className="floater">🎉</div>
-        <div className="floater">🥃</div>
-        <div className="floater">☘️</div>
-        {/* Gold sparkles */}
-        <div className="floater sparkle">⭐</div>
-        <div className="floater sparkle">🌟</div>
-        <div className="floater sparkle">⭐</div>
-        <div className="floater sparkle">🌟</div>
-        <div className="floater sparkle">⭐</div>
-        {/* More Irish icons */}
-        <div className="floater">🍀</div>
-        <div className="floater">🍺</div>
-        <div className="floater">☘️</div>
-        <div className="floater">🥃</div>
-        <div className="floater">🇮🇪</div>
-        <div className="floater">🍀</div>
-        <div className="floater">🎉</div>
-        <div className="floater">☘️</div>
-        <div className="floater">🍺</div>
-        <div className="floater">🥃</div>
+        {/* Florals and regency motifs */}
+        <div className="floater">❀</div>
+        <div className="floater">✿</div>
+        <div className="floater">❦</div>
+        <div className="floater">❁</div>
+        <div className="floater">❀</div>
+        <div className="floater">✾</div>
+        <div className="floater">✿</div>
+        <div className="floater">❧</div>
+        <div className="floater">❦</div>
+        <div className="floater">❀</div>
+        {/* Gilt sparkles */}
+        <div className="floater sparkle">✦</div>
+        <div className="floater sparkle">✧</div>
+        <div className="floater sparkle">✦</div>
+        <div className="floater sparkle">✧</div>
+        <div className="floater sparkle">✦</div>
+        {/* More florals */}
+        <div className="floater">✾</div>
+        <div className="floater">✿</div>
+        <div className="floater">❀</div>
+        <div className="floater">❦</div>
+        <div className="floater">❁</div>
+        <div className="floater">✾</div>
+        <div className="floater">❧</div>
+        <div className="floater">❀</div>
+        <div className="floater">✿</div>
+        <div className="floater">❦</div>
         {/* More sparkles */}
-        <div className="floater sparkle">🌟</div>
-        <div className="floater sparkle">⭐</div>
-        <div className="floater sparkle">🌟</div>
-        <div className="floater sparkle">⭐</div>
-        <div className="floater sparkle">🌟</div>
+        <div className="floater sparkle">✧</div>
+        <div className="floater sparkle">✦</div>
+        <div className="floater sparkle">✧</div>
+        <div className="floater sparkle">✦</div>
+        <div className="floater sparkle">✧</div>
       </div>
 
       {/* Corner glow decoration */}
@@ -125,7 +125,7 @@ function App() {
           <div className="w-full max-w-md p-8 rounded-2xl bg-card">
             <div className="flex flex-col items-center justify-center py-8">
               <div className="luxe-spinner"></div>
-              <p className="mt-4 text-sm text-text-light italic">Loading...</p>
+              <p className="mt-4 text-sm text-text-light italic font-display">Loading...</p>
             </div>
           </div>
         ) : (
