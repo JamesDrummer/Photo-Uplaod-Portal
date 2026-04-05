@@ -79,7 +79,7 @@ export function BugReportModal({ currentPage, reporterName, onClose }: BugReport
 
         {submitted ? (
           <div className="py-6 text-center">
-            <div className="text-3xl mb-3">☘️</div>
+            <div className="text-3xl mb-3 text-gold">❦</div>
             <p className="text-text-dark font-medium">Thanks for reporting!</p>
             <p className="mt-1 text-sm text-text-light italic">We'll look into it shortly.</p>
           </div>

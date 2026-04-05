@@ -4,7 +4,7 @@
 
 html {
   height: 100%;
-  background-color: #0F1A0F;
+  background-color: #EEF1F8;
 }
 
 body {
@@ -14,7 +14,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Background pattern overlay ─── */
+/* ─── Background pattern overlay (botanical dots on paper) ─── */
 body::before {
   content: '';
   position: fixed;
@@ -24,31 +24,31 @@ body::before {
   height: 100vh;
   pointer-events: none;
   z-index: 0;
-  background-color: #0F1A0F;
+  background-color: #EEF1F8;
   background-image:
-    /* Celtic knot-inspired dot pattern */
-    radial-gradient(circle at 20% 20%, rgba(46, 139, 87, 0.12) 3px, transparent 3px),
-    radial-gradient(circle at 80% 30%, rgba(46, 139, 87, 0.10) 2px, transparent 2px),
-    radial-gradient(circle at 40% 70%, rgba(46, 139, 87, 0.12) 3px, transparent 3px),
-    radial-gradient(circle at 60% 50%, rgba(46, 139, 87, 0.10) 2px, transparent 2px),
-    /* Shamrock accent dots */
-    radial-gradient(circle at 15% 45%, rgba(60, 179, 113, 0.08) 2px, transparent 2px),
-    radial-gradient(circle at 85% 55%, rgba(60, 179, 113, 0.08) 2px, transparent 2px),
-    /* Gold/amber accent dots (Guinness) */
-    radial-gradient(circle at 10% 60%, rgba(218, 165, 32, 0.10) 2px, transparent 2px),
-    radial-gradient(circle at 90% 80%, rgba(218, 165, 32, 0.10) 2px, transparent 2px),
-    radial-gradient(circle at 50% 10%, rgba(218, 165, 32, 0.10) 2px, transparent 2px),
-    radial-gradient(circle at 30% 90%, rgba(218, 165, 32, 0.10) 2px, transparent 2px),
-    radial-gradient(circle at 70% 15%, rgba(198, 142, 23, 0.08) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 25% 75%, rgba(198, 142, 23, 0.08) 1.5px, transparent 1.5px),
-    radial-gradient(ellipse at top, rgba(15, 26, 15, 1) 0%, rgba(20, 35, 20, 0.9) 100%);
+    /* Navy botanical dot pattern */
+    radial-gradient(circle at 20% 20%, rgba(30, 58, 107, 0.10) 3px, transparent 3px),
+    radial-gradient(circle at 80% 30%, rgba(30, 58, 107, 0.08) 2px, transparent 2px),
+    radial-gradient(circle at 40% 70%, rgba(30, 58, 107, 0.10) 3px, transparent 3px),
+    radial-gradient(circle at 60% 50%, rgba(30, 58, 107, 0.08) 2px, transparent 2px),
+    /* Powder blue accent dots */
+    radial-gradient(circle at 15% 45%, rgba(184, 197, 224, 0.35) 2px, transparent 2px),
+    radial-gradient(circle at 85% 55%, rgba(184, 197, 224, 0.35) 2px, transparent 2px),
+    /* Gilt accent dots */
+    radial-gradient(circle at 10% 60%, rgba(201, 169, 97, 0.10) 2px, transparent 2px),
+    radial-gradient(circle at 90% 80%, rgba(201, 169, 97, 0.10) 2px, transparent 2px),
+    radial-gradient(circle at 50% 10%, rgba(201, 169, 97, 0.10) 2px, transparent 2px),
+    radial-gradient(circle at 30% 90%, rgba(201, 169, 97, 0.10) 2px, transparent 2px),
+    radial-gradient(circle at 70% 15%, rgba(168, 138, 72, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 25% 75%, rgba(168, 138, 72, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(ellipse at top, rgba(238, 241, 248, 1) 0%, rgba(224, 230, 244, 0.9) 100%);
   background-size:
     120px 120px, 180px 180px, 150px 150px, 200px 200px,
     160px 160px, 140px 140px, 90px 90px, 110px 110px,
     70px 70px, 85px 85px, 130px 130px, 95px 95px, 100% 100%;
 }
 
-/* ─── Aurora background glow (Irish pub warmth) ─── */
+/* ─── Aurora background glow (soft regency light) ─── */
 body::after {
   content: '';
   position: fixed;
@@ -57,9 +57,9 @@ body::after {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 100% 0%, rgba(46, 139, 87, 0.10) 0%, transparent 40%),
-    radial-gradient(circle at 0% 100%, rgba(218, 165, 32, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(60, 179, 113, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 100% 0%, rgba(184, 197, 224, 0.35) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(201, 169, 97, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(30, 58, 107, 0.04) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
   animation: auroraShift 20s ease-in-out infinite alternate;
@@ -71,19 +71,19 @@ body::after {
   100% { background-position: 10% 40%, 90% 60%, 60% 40%; }
 }
 
-/* ─── Corner glow (warm pub light) ─── */
+/* ─── Corner glow (soft navy) ─── */
 .corner-glow {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle at 0% 100%, rgba(218, 165, 32, 0.06) 0%, transparent 50%);
+  background: radial-gradient(circle at 0% 100%, rgba(30, 58, 107, 0.08) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* ─── Floating celebration elements ─── */
+/* ─── Floating botanical elements ─── */
 .floating-elements {
   position: fixed;
   top: 0;
@@ -98,10 +98,10 @@ body::after {
 .floater {
   position: absolute;
   top: -20px;
-  color: rgba(46, 139, 87, 0.25);
+  color: rgba(30, 58, 107, 0.22);
   font-size: 1.2rem;
   animation: floatdown linear infinite;
-  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
 .floater:nth-child(1) { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 0.8rem; }
@@ -116,9 +116,9 @@ body::after {
 .floater:nth-child(10) { left: 95%; animation-duration: 14s; animation-delay: 0.5s; font-size: 0.95rem; }
 
 .floater.sparkle {
-  color: rgba(218, 165, 32, 0.40);
+  color: rgba(201, 169, 97, 0.45);
   font-size: 0.8rem;
-  text-shadow: 0 0 6px rgba(218, 165, 32, 0.3);
+  text-shadow: 0 0 6px rgba(201, 169, 97, 0.25);
 }
 
 .floater.sparkle:nth-child(11) { left: 10%; animation-duration: 20s; animation-delay: 1s; }
@@ -187,7 +187,7 @@ body::after {
 .stagger-4 { animation: fadeInUp 0.5s ease-out 0.4s forwards; opacity: 0; }
 .stagger-5 { animation: fadeInUp 0.5s ease-out 0.5s forwards; opacity: 0; }
 
-/* ─── Decorative flourish under titles (Celtic knot inspired) ─── */
+/* ─── Decorative flourish under titles (floral heart) ─── */
 .flourish {
   position: relative;
   padding-bottom: 1.25rem;
@@ -198,40 +198,40 @@ body::after {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(218, 165, 32, 0.7), rgba(46, 139, 87, 0.7), rgba(218, 165, 32, 0.7), transparent);
+  width: 100px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 169, 97, 0.7), rgba(30, 58, 107, 0.7), rgba(201, 169, 97, 0.7), transparent);
 }
 .flourish::before {
-  content: '\2618'; /* shamrock */
+  content: '\2766'; /* floral heart */
   position: absolute;
-  bottom: -8px;
+  bottom: -9px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.75rem;
-  color: rgba(46, 139, 87, 0.7);
+  font-size: 0.9rem;
+  color: rgba(30, 58, 107, 0.75);
   z-index: 1;
-  background: rgba(26, 43, 26, 0.9);
-  padding: 0 6px;
+  background: #FFFFFF;
+  padding: 0 8px;
 }
 
 /* ─── Section divider ─── */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(46, 139, 87, 0.4), rgba(218, 165, 32, 0.3), rgba(46, 139, 87, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(30, 58, 107, 0.35), rgba(201, 169, 97, 0.35), rgba(30, 58, 107, 0.35), transparent);
   margin: 0.5rem 0;
 }
 
-/* ─── Luxe button (Irish green gradient) ─── */
+/* ─── Luxe button (navy gradient with gold shimmer) ─── */
 .btn-luxe {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #2E8B57 0%, #1B5E3A 100%);
-  box-shadow: 0 4px 15px rgba(46, 139, 87, 0.35);
+  background: linear-gradient(135deg, #1E3A6B 0%, #15294D 100%);
+  box-shadow: 0 4px 15px rgba(30, 58, 107, 0.30);
   transition: all 0.3s ease;
 }
 .btn-luxe:hover {
-  box-shadow: 0 6px 20px rgba(46, 139, 87, 0.5);
+  box-shadow: 0 6px 20px rgba(30, 58, 107, 0.45);
   transform: translateY(-1px);
 }
 .btn-luxe::after {
@@ -241,14 +241,14 @@ body::after {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(218, 165, 32, 0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(201, 169, 97, 0.35), transparent);
   transition: left 0.5s ease;
 }
 .btn-luxe:hover::after {
   left: 100%;
 }
 .btn-luxe:disabled {
-  background: linear-gradient(135deg, #3A4A3A 0%, #2A3A2A 100%);
+  background: linear-gradient(135deg, #8391AB 0%, #6E7C96 100%);
   box-shadow: none;
   transform: none;
   cursor: not-allowed;
@@ -258,12 +258,12 @@ body::after {
   display: none;
 }
 
-/* ─── Elegant spinner (Irish green) ─── */
+/* ─── Elegant spinner (navy) ─── */
 .luxe-spinner {
   width: 40px;
   height: 40px;
-  border: 2px solid rgba(218, 165, 32, 0.2);
-  border-top-color: #2E8B57;
+  border: 2px solid rgba(201, 169, 97, 0.25);
+  border-top-color: #1E3A6B;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -272,9 +272,9 @@ body::after {
   to { transform: rotate(360deg); }
 }
 
-/* ─── Skeleton shimmer (dark theme) ─── */
+/* ─── Skeleton shimmer (light theme) ─── */
 .skeleton {
-  background: linear-gradient(90deg, rgba(46,139,87,0.08) 25%, rgba(46,139,87,0.16) 50%, rgba(46,139,87,0.08) 75%);
+  background: linear-gradient(90deg, rgba(30, 58, 107, 0.06) 25%, rgba(30, 58, 107, 0.14) 50%, rgba(30, 58, 107, 0.06) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 0.75rem;
@@ -316,14 +316,14 @@ body::after {
 .bg-card {
   position: relative;
   z-index: 20;
-  background: rgba(26, 43, 26, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(46, 139, 87, 0.25);
-  border-top: 2px solid rgba(218, 165, 32, 0.5);
+  border: 1px solid rgba(30, 58, 107, 0.18);
+  border-top: 2px solid rgba(201, 169, 97, 0.6);
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.2),
-    0 10px 30px -5px rgba(0, 0, 0, 0.3),
-    0 20px 50px -12px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(46, 139, 87, 0.1);
+    0 4px 6px -1px rgba(30, 58, 107, 0.08),
+    0 10px 30px -5px rgba(30, 58, 107, 0.12),
+    0 20px 50px -12px rgba(30, 58, 107, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
