@@ -52,8 +52,8 @@ function App() {
         return <PasswordScreen onSuccess={(name) => {
           setUploaderName(name);
           logAction('login_success', name);
-          logAction('page_navigate', 'gallery');
-          setPage('gallery');
+          logAction('page_navigate', 'upload');
+          setPage('upload');
         }} />;
       case 'upload':
         return <UploadScreen
@@ -71,7 +71,7 @@ function App() {
       default:
         return <PasswordScreen onSuccess={(name) => {
           setUploaderName(name);
-          setPage('gallery');
+          setPage('upload');
         }} />;
     }
   };
