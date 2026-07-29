@@ -248,13 +248,13 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
     <>
     <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
       <div className="text-center stagger-1">
-        <h1 className="text-5xl text-text-dark font-display font-semibold flourish">
+        <h1 className="text-5xl text-text-dark font-display flourish">
           Share a Memory
         </h1>
-        <p className="mt-6 text-4xl text-primary font-script">
+        <p className="mt-6 text-4xl text-gold font-script italic">
           Welcome, {uploaderName}
         </p>
-        <p className="mt-2 text-text-light italic text-sm font-display">
+        <p className="mt-2 text-text-light italic text-sm font-script">
           Upload your favourite moments from our wedding day
         </p>
       </div>

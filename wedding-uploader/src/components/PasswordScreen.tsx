@@ -64,13 +64,13 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         <p className="mb-2 text-[0.7rem] text-text-light uppercase tracking-[0.3em]">
           Together with their families
         </p>
-        <h1 className="text-5xl text-text-dark font-display font-semibold flourish leading-tight">
-          Danielle <span className="font-script text-gold text-6xl align-middle">&amp;</span> Marcus
+        <h1 className="text-5xl text-text-dark font-display flourish leading-tight">
+          James <span className="font-script italic text-gold text-6xl align-middle">&amp;</span> Elise
         </h1>
-        <p className="mt-3 text-sm text-primary tracking-wide italic font-display">
-          11 April 2026
+        <p className="mt-3 text-sm text-gold/85 tracking-[0.2em] uppercase font-sans">
+          8 August 2026
         </p>
-        <p className="mt-4 text-text-light italic font-display">
+        <p className="mt-4 text-text-light italic font-script">
           Enter your name and the event password to share your memories with us
         </p>
       </div>
@@ -125,7 +125,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
               setError('Security check failed. Please try again.');
             }}
             onExpire={() => setCaptchaToken(null)}
-            theme="light"
+            theme="dark"
           />
         </div>
 
