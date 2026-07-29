@@ -220,8 +220,8 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
     <>
       <div className="w-full max-w-4xl p-8 space-y-6 rounded-2xl bg-card animate-scale-in">
         <div className="text-center stagger-1">
-          <h1 className="text-5xl text-text-dark font-display font-semibold flourish">Our Wedding Gallery</h1>
-          <p className="mt-5 text-2xl text-primary tracking-wide font-script whitespace-nowrap">joyfully gathered - 11 04 2026</p>
+          <h1 className="text-5xl text-text-dark font-display flourish">Our Wedding Gallery</h1>
+          <p className="mt-5 text-2xl text-gold tracking-wide font-script italic whitespace-nowrap">joyfully gathered · 08 08 2026</p>
           <p className="mt-2 text-sm text-text-light">
             {uploads.length} {uploads.length === 1 ? 'memory' : 'memories'} shared
             {isVerifying && (

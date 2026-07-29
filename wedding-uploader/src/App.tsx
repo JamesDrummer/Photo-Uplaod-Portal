@@ -78,54 +78,20 @@ function App() {
 
   return (
     <>
-      {/* Floating botanical wedding elements */}
-      <div className="floating-elements" aria-hidden="true">
-        {/* Florals and regency motifs */}
-        <div className="floater">❀</div>
-        <div className="floater">✿</div>
-        <div className="floater">❦</div>
-        <div className="floater">❁</div>
-        <div className="floater">❀</div>
-        <div className="floater">✾</div>
-        <div className="floater">✿</div>
-        <div className="floater">❧</div>
-        <div className="floater">❦</div>
-        <div className="floater">❀</div>
-        {/* Gilt sparkles */}
-        <div className="floater sparkle">✦</div>
-        <div className="floater sparkle">✧</div>
-        <div className="floater sparkle">✦</div>
-        <div className="floater sparkle">✧</div>
-        <div className="floater sparkle">✦</div>
-        {/* More florals */}
-        <div className="floater">✾</div>
-        <div className="floater">✿</div>
-        <div className="floater">❀</div>
-        <div className="floater">❦</div>
-        <div className="floater">❁</div>
-        <div className="floater">✾</div>
-        <div className="floater">❧</div>
-        <div className="floater">❀</div>
-        <div className="floater">✿</div>
-        <div className="floater">❦</div>
-        {/* More sparkles */}
-        <div className="floater sparkle">✧</div>
-        <div className="floater sparkle">✦</div>
-        <div className="floater sparkle">✧</div>
-        <div className="floater sparkle">✦</div>
-        <div className="floater sparkle">✧</div>
+      <div className="wedding-atmosphere" aria-hidden="true">
+        <span>✦</span>
+        <span>✧</span>
+        <span>✦</span>
+        <span>✧</span>
       </div>
 
-      {/* Corner glow decoration */}
-      <div className="corner-glow" aria-hidden="true"></div>
-
       {/* Main content */}
-      <div className="flex items-center justify-center min-h-screen px-4 py-12">
+      <div className="flex items-center justify-center min-h-screen px-4 py-12 sm:py-16">
         {isCheckingSession ? (
           <div className="w-full max-w-md p-8 rounded-2xl bg-card">
             <div className="flex flex-col items-center justify-center py-8">
               <div className="luxe-spinner"></div>
-              <p className="mt-4 text-sm text-text-light italic font-display">Loading...</p>
+              <p className="mt-4 text-sm text-text-light italic font-script">Loading...</p>
             </div>
           </div>
         ) : (
