@@ -9,6 +9,12 @@ A beautiful, dark-mode single-page React application for wedding guests to uploa
 - 🎨 Gothic aesthetic with bright purple accents
 - 📱 Fully responsive design
 - ☁️ Powered by Supabase for backend storage
+- 🛡️ Guest gallery clients are non-destructive: missing media is hidden locally
+- 📦 Uploads are validated and processed sequentially in batches of up to five
+
+## Missing media
+
+If James removes an inappropriate object directly from the Storage bucket, its gallery item fails to load and is hidden in that guest's browser. Guest clients do not delete database rows or reconcile Storage. Durable cleanup is reserved for a future trusted, service-role reconciler with repeated checks and a grace period; see [`../docs/missing-media-reconciliation.md`](../docs/missing-media-reconciliation.md).
 
 ## Tech Stack
 
@@ -22,7 +28,7 @@ A beautiful, dark-mode single-page React application for wedding guests to uploa
 
 ### Prerequisites
 
-- Node.js 16+ and npm
+- Node.js 20+ and npm
 - A Supabase account and project
 
 ### Supabase Setup
