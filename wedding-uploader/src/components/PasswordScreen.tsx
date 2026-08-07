@@ -14,6 +14,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [turnstileFallback, setTurnstileFallback] = useState(false);
 
   // Try to auto-fill name from session on mount
   useEffect(() => {
@@ -23,17 +24,26 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         if (session) {
           setName(session.name);
         }
-      } catch (error) {
+      } catch {
         // Silently fail - user can still enter their name manually
       }
     };
     loadSession();
   }, []);
 
+  useEffect(() => {
+    if (captchaToken || turnstileFallback) return;
+    const timer = window.setTimeout(() => {
+      setTurnstileFallback(true);
+      setError('The security check is unavailable. You can continue with the event password only.');
+    }, 8_000);
+    return () => window.clearTimeout(timer);
+  }, [captchaToken, turnstileFallback]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!captchaToken) {
+    if (!captchaToken && !turnstileFallback) {
       setError('Please complete the security check.');
       return;
     }
@@ -116,15 +126,27 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         </div>
 
         {/* Turnstile CAPTCHA Widget */}
-        <div className="flex justify-center stagger-4">
+        <div
+          data-testid="turnstile-container"
+          className={`flex justify-center stagger-4${turnstileFallback ? ' hidden' : ''}`}
+        >
           <Turnstile
             sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-            onVerify={(token) => setCaptchaToken(token)}
+            onVerify={(token) => {
+              setCaptchaToken(token);
+              setTurnstileFallback(false);
+              setError(current => current.startsWith('The security check is unavailable') ? '' : current);
+            }}
             onError={() => {
               setCaptchaToken(null);
-              setError('Security check failed. Please try again.');
+              setTurnstileFallback(true);
+              setError('The security check is unavailable. You can continue with the event password only.');
             }}
-            onExpire={() => setCaptchaToken(null)}
+            onExpire={() => {
+              if (!captchaToken) return;
+              setCaptchaToken(null);
+              setTurnstileFallback(false);
+            }}
             theme="dark"
           />
         </div>
@@ -134,7 +156,7 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         <div className="stagger-5">
           <button
             type="submit"
-            disabled={!captchaToken}
+            disabled={!captchaToken && !turnstileFallback}
             className="w-full py-3.5 px-6 font-bold text-white rounded-full btn-luxe tracking-wide"
           >
             Enter

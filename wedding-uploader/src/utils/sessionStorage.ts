@@ -31,7 +31,7 @@ function simpleXorDecode(encoded: string, key: string): string {
       );
     }
     return result;
-  } catch (error) {
+  } catch {
     throw new Error('Failed to decode session data');
   }
 }

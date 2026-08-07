@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { GalleryItem, Upload } from './GalleryItem';
@@ -6,150 +6,18 @@ import { Lightbox } from './Lightbox';
 import { logAction } from '../utils/actionLog';
 import { withRetry } from '../utils/retry';
 
-interface GalleryScreenProps {
-  onShowUpload: () => void;
-}
+interface GalleryScreenProps { onShowUpload: () => void }
 
 export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Remove upload from list when file is missing
   const handleFileMissing = (uploadId: number) => {
-    setUploads(prevUploads => prevUploads.filter(upload => upload.id !== uploadId));
+    setLightboxIndex(null);
+    setUploads(current => current.filter(upload => upload.id !== uploadId));
   };
-
-  const listFolderFiles = useCallback(async (folderPath: string): Promise<Set<string> | null> => {
-    const fileNames = new Set<string>();
-    const PAGE_SIZE = 100;
-    let offset = 0;
-
-    try {
-      while (true) {
-        const data = await withRetry(async () => {
-          const result = await supabase.storage
-            .from('guest-media')
-            .list(folderPath, {
-              limit: PAGE_SIZE,
-              offset,
-            });
-          if (result.error) throw result.error;
-          return result.data;
-        }, { maxAttempts: 3, label: `list storage folder ${folderPath}`, silent: true });
-
-        if (!data) {
-          console.warn(`Could not list storage folder ${folderPath} after retries; keeping its uploads visible.`);
-          return null;
-        }
-
-        for (const item of data) {
-          if (item.name && item.name !== '.emptyFolderPlaceholder') {
-            fileNames.add(item.name);
-          }
-        }
-
-        if (data.length < PAGE_SIZE) {
-          break;
-        }
-
-        offset += PAGE_SIZE;
-      }
-
-      return fileNames;
-    } catch (error) {
-      console.warn(`Could not verify folder ${folderPath}; keeping its uploads visible.`, error);
-      return null;
-    }
-  }, []);
-
-  // Verify uploads before first paint so stale records never flash on screen.
-  const verifyUploads = useCallback(async (uploadsToVerify: Upload[]) => {
-    if (uploadsToVerify.length === 0) {
-      return { confirmedUploads: [], orphanedIds: [] as number[] };
-    }
-
-    setIsVerifying(true);
-    console.log(`Verifying ${uploadsToVerify.length} files before render...`);
-
-    const BATCH_SIZE = 5;
-    const confirmedUploads: Upload[] = [];
-    const orphanedIds: number[] = [];
-    const uploadsByFolder = new Map<string, Upload[]>();
-
-    try {
-      for (const upload of uploadsToVerify) {
-        const pathSegments = upload.file_path.split('/').filter(Boolean);
-        const folderPath = pathSegments.slice(0, -1).join('/');
-
-        if (!uploadsByFolder.has(folderPath)) {
-          uploadsByFolder.set(folderPath, []);
-        }
-
-        uploadsByFolder.get(folderPath)?.push(upload);
-      }
-
-      const folderPaths = Array.from(uploadsByFolder.keys());
-
-      for (let i = 0; i < folderPaths.length; i += BATCH_SIZE) {
-        const batch = folderPaths.slice(i, i + BATCH_SIZE);
-        const results = await Promise.all(
-          batch.map(async (folderPath) => ({
-            folderPath,
-            fileNames: await listFolderFiles(folderPath),
-          }))
-        );
-
-        for (const { folderPath, fileNames } of results) {
-          const folderUploads = uploadsByFolder.get(folderPath) ?? [];
-
-          // If verification fails for a folder, keep its uploads visible.
-          if (fileNames === null) {
-            confirmedUploads.push(...folderUploads);
-            continue;
-          }
-
-          for (const upload of folderUploads) {
-            const pathSegments = upload.file_path.split('/').filter(Boolean);
-            const fileName = pathSegments[pathSegments.length - 1];
-
-            if (fileName && fileNames.has(fileName)) {
-              confirmedUploads.push(upload);
-            } else {
-              console.log(`File missing: ${upload.file_name} (${upload.file_path})`);
-              orphanedIds.push(upload.id);
-            }
-          }
-        }
-      }
-
-      return { confirmedUploads, orphanedIds };
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [listFolderFiles]);
-
-  const cleanupOrphanedRecords = useCallback(async (orphanedIds: number[]) => {
-    if (orphanedIds.length === 0) return;
-
-    console.log(`Cleaning up ${orphanedIds.length} orphaned records...`);
-
-    await Promise.all(
-      orphanedIds.map(async (id) => {
-        try {
-          await withRetry(async () => {
-            const { error } = await supabase.from('uploads').delete().eq('id', id);
-            if (error) throw error;
-          }, { maxAttempts: 2, label: `delete orphaned record ${id}`, silent: true });
-          console.log(`Deleted orphaned record: ${id}`);
-        } catch (deleteError) {
-          console.error(`Failed to delete orphaned record ${id}:`, deleteError);
-        }
-      })
-    );
-  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -159,62 +27,37 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
       setIsLoading(true);
       setError(null);
       try {
-        let data: Upload[] | null = null;
-        try {
-          data = await withRetry(async () => {
-            const result = await supabase
-              .from('uploads')
-              .select('id, file_path, file_name, thumbnail_path')
-              .order('created_at', { ascending: false });
-            if (result.error) throw result.error;
-            return result.data;
-          }, { maxAttempts: 3, label: 'fetch gallery uploads' });
-        } catch (fetchErr) {
-          console.error('Supabase error:', fetchErr);
-          if (isActive) {
-            setError('Could not load the gallery. Please check your connection and try again.');
-          }
-          return;
-        }
-
-        const validUploads = (data ?? []).filter(upload => upload.file_path);
-        console.log('Fetched uploads:', validUploads);
-        logAction('gallery_load', `${validUploads.length} records fetched`);
-
-        const { confirmedUploads, orphanedIds } = await verifyUploads(validUploads);
-        logAction('gallery_verify', `${confirmedUploads.length} confirmed, ${orphanedIds.length} orphaned`);
+        const data = await withRetry(async () => {
+          const result = await supabase
+            .from('uploads')
+            .select('id, file_path, file_name, thumbnail_path')
+            .order('created_at', { ascending: false });
+          if (result.error) throw result.error;
+          return result.data as Upload[] | null;
+        }, { maxAttempts: 3, label: 'fetch gallery uploads' });
 
         if (!isActive) return;
+        const validUploads = (data ?? []).filter(upload => upload.file_path);
+        setUploads(validUploads);
+        logAction('gallery_load', `${validUploads.length} records fetched`);
 
-        setUploads(confirmedUploads);
-
-        if (orphanedIds.length > 0) {
-          void cleanupOrphanedRecords(orphanedIds);
+        if (validUploads.length === 0) {
+          redirectTimer = setTimeout(() => isActive && onShowUpload(), 1500);
         }
-
-        if (confirmedUploads.length === 0) {
-          redirectTimer = setTimeout(() => {
-            if (isActive) {
-              onShowUpload();
-            }
-          }, 1500);
-        }
+      } catch (fetchError) {
+        console.error('Supabase error:', fetchError);
+        if (isActive) setError('Could not load the gallery. Please check your connection and try again.');
       } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
+        if (isActive) setIsLoading(false);
       }
     };
 
-    fetchUploads();
-
+    void fetchUploads();
     return () => {
       isActive = false;
-      if (redirectTimer) {
-        clearTimeout(redirectTimer);
-      }
+      if (redirectTimer) clearTimeout(redirectTimer);
     };
-  }, [cleanupOrphanedRecords, onShowUpload, verifyUploads]);
+  }, [onShowUpload]);
 
   return (
     <>
@@ -223,41 +66,24 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
           <h1 className="text-5xl text-text-dark font-display flourish">Our Wedding Gallery</h1>
           <p className="mt-5 text-sm text-text-light">
             {uploads.length} {uploads.length === 1 ? 'memory' : 'memories'} shared
-            {isVerifying && (
-              <span className="ml-2 text-text-light/50 animate-pulse">
-                (syncing...)
-              </span>
-            )}
           </p>
         </div>
-
         <div className="section-divider" />
 
         {isLoading && (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="aspect-square skeleton" style={{ animationDelay: `${i * 0.1}s` }} />
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="aspect-square skeleton" style={{ animationDelay: `${index * 0.1}s` }} />
             ))}
           </div>
         )}
-        {error && (
-          <div className="text-center">
-            <p className="text-red-400">{error}</p>
-            <p className="mt-2 text-sm text-text-light/50">
-              Make sure you've added the file_path column to your uploads table.
-            </p>
-          </div>
-        )}
-
+        {error && <p className="text-red-400 text-center">{error}</p>}
         {!isLoading && !error && uploads.length === 0 && (
           <div className="py-12 text-center">
             <p className="text-text-light">No photos uploaded yet.</p>
-            <p className="mt-2 text-sm text-text-light/60 italic">
-              Redirecting to upload page...
-            </p>
+            <p className="mt-2 text-sm text-text-light/60 italic">Redirecting to upload page...</p>
           </div>
         )}
-
         {!isLoading && !error && uploads.length > 0 && (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {uploads.map((upload, index) => (
@@ -281,23 +107,12 @@ export function GalleryScreen({ onShowUpload }: GalleryScreenProps) {
             title="Upload Photos"
             style={{ touchAction: 'manipulation' }}
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
         </div>,
-        document.body
+        document.body,
       )}
 
       {lightboxIndex !== null && (

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { logAction } from '../utils/actionLog';
-import { withRetry } from '../utils/retry';
+
 
 export type Upload = {
   id: number;
@@ -36,7 +36,7 @@ function getLegacyTransformUrl(filePath: string, width: number, height: number) 
 }
 
 /** Detect file type helpers */
-export const isVideoFile = (name: string) => /\.(mp4|mov|mkv|webm)$/i.test(name);
+export const isVideoFile = (name: string) => /\.(mp4|mov|m4v|mkv|webm)$/i.test(name);
 export const isGifFile = (name: string) => /\.gif$/i.test(name);
 
 export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: GalleryItemProps) {
@@ -65,6 +65,16 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
     return () => observer.disconnect();
   }, []);
 
+  const isVideo = isVideoFile(upload.file_name);
+  const isGif = isGifFile(upload.file_name);
+  const fullUrl = getFullUrl(upload.file_path);
+  const thumbnailUrl = isVideo || isGif
+    ? fullUrl
+    : upload.thumbnail_path
+      ? getFullUrl(upload.thumbnail_path)
+      : getLegacyTransformUrl(upload.file_path, 300, 300);
+  const displayImageUrl = imageSrc ?? thumbnailUrl;
+
   // Safety check
   if (!upload.file_path || hasError) {
     if (!upload.file_path) {
@@ -73,21 +83,6 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
     return null;
   }
 
-  const isVideo = isVideoFile(upload.file_name);
-  const isGif = isGifFile(upload.file_name);
-
-  const fullUrl = getFullUrl(upload.file_path);
-
-  // For images, use pre-generated thumbnail if available.
-  // Legacy uploads without a thumbnail fall back to Supabase transform.
-  // GIFs use original to preserve animation.
-  const thumbnailUrl = useMemo(() => {
-    if (isVideo || isGif) return fullUrl;
-    if (upload.thumbnail_path) return getFullUrl(upload.thumbnail_path);
-    return getLegacyTransformUrl(upload.file_path, 300, 300);
-  }, [upload.file_path, upload.thumbnail_path, fullUrl, isGif, isVideo]);
-
-  const displayImageUrl = imageSrc ?? thumbnailUrl;
 
   return (
     <div
@@ -124,21 +119,10 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
                 e.currentTarget.currentTime = 0.1;
               }}
               onLoadedData={() => setIsMediaLoaded(true)}
-              onError={async () => {
+              onError={() => {
                 console.error('Failed to load video:', fullUrl, upload);
                 setHasError(true);
-                if (onFileMissing) {
-                  onFileMissing(upload.id);
-                }
-                try {
-                  await withRetry(async () => {
-                    const { error } = await supabase.from('uploads').delete().eq('id', upload.id);
-                    if (error) throw error;
-                  }, { maxAttempts: 2, label: `delete orphaned video record ${upload.id}`, silent: true });
-                  console.log('Deleted orphaned record:', upload.id);
-                } catch (deleteError) {
-                  console.error('Failed to delete orphaned record:', deleteError);
-                }
+                onFileMissing?.(upload.id);
               }}
             />
             {/* Play button overlay */}
@@ -163,7 +147,7 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
                 isMediaLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setIsMediaLoaded(true)}
-              onError={async () => {
+              onError={() => {
                 if (displayImageUrl !== fullUrl) {
                   console.warn('Thumbnail failed, retrying with original image:', displayImageUrl, upload);
                   setIsMediaLoaded(false);
@@ -173,18 +157,7 @@ export function GalleryItem({ upload, index, onFileMissing, onOpenLightbox }: Ga
 
                 console.error('Failed to load image:', displayImageUrl, upload);
                 setHasError(true);
-                if (onFileMissing) {
-                  onFileMissing(upload.id);
-                }
-                try {
-                  await withRetry(async () => {
-                    const { error } = await supabase.from('uploads').delete().eq('id', upload.id);
-                    if (error) throw error;
-                  }, { maxAttempts: 2, label: `delete orphaned image record ${upload.id}`, silent: true });
-                  console.log('Deleted orphaned record:', upload.id);
-                } catch (deleteError) {
-                  console.error('Failed to delete orphaned record:', deleteError);
-                }
+                onFileMissing?.(upload.id);
               }}
             />
             {/* Wedding-purple hover wash */}

@@ -15,48 +15,41 @@ function isHeicFile(file: File): boolean {
   );
 }
 
+type HeicConverter = (options: Parameters<typeof heic2any>[0]) => ReturnType<typeof heic2any>;
+
+export async function convertHeicToJpeg(
+  file: File,
+  quality: number = 0.8,
+  converter: HeicConverter = heic2any,
+): Promise<File> {
+  try {
+    const convertedBlob = await converter({ blob: file, toType: 'image/jpeg', quality });
+    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+    return new File([blob], `${nameWithoutExt}.jpg`, {
+      type: 'image/jpeg',
+      lastModified: Date.now(),
+    });
+  } catch (error) {
+    console.warn(`HEIC conversion failed for ${file.name}:`, error);
+    throw new Error(`Could not convert ${file.name}. Please choose a different photo or export it as JPEG.`);
+  }
+}
+
 /**
  * Converts an image file to JPEG format with specified quality
  * @param file - The original image file
  * @param quality - JPEG quality (0-1), default 0.8
- * @returns Promise<File> - The converted JPEG file or original file if conversion fails
+ * @returns Promise<File> - The converted JPEG file
+ * @throws If HEIC or browser image conversion fails
  */
 export async function convertToJpeg(
   file: File,
   quality: number = 0.8
 ): Promise<File> {
-  // Handle HEIC files specially
+  // HEIC must be converted successfully; uploading the original would create a gallery item many browsers cannot render.
   if (isHeicFile(file)) {
-    try {
-      console.log(`Attempting HEIC conversion for ${file.name}...`);
-      // Convert HEIC to JPEG using heic2any
-      const convertedBlob = await heic2any({
-        blob: file,
-        toType: 'image/jpeg',
-        quality: quality,
-      });
-
-      // heic2any can return an array of blobs for multi-page images
-      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-
-      // Create new File object with .jpg extension
-      const originalName = file.name;
-      const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
-      const newFileName = `${nameWithoutExt}.jpg`;
-
-      const convertedFile = new File([blob], newFileName, {
-        type: 'image/jpeg',
-        lastModified: Date.now(),
-      });
-      
-      console.log(`✓ Successfully converted HEIC: ${file.name} → ${convertedFile.name}`);
-      return convertedFile;
-    } catch (error) {
-      // HEIC conversion failed - this is common with newer iPhone formats
-      // Return original file and let Supabase handle it
-      console.warn(`⚠️ HEIC conversion failed for ${file.name}, uploading original file. Error:`, error);
-      return file;
-    }
+    return convertHeicToJpeg(file, quality);
   }
 
   // For non-HEIC images, use Canvas API
