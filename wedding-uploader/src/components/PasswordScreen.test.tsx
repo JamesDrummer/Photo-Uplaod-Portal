@@ -20,8 +20,10 @@ describe('PasswordScreen Turnstile fallback', () => {
     render(<PasswordScreen onSuccess={onSuccess} />);
 
     expect(screen.getByRole('button', { name: 'Enter' })).toBeDisabled();
+    expect(screen.getByTestId('turnstile-container')).not.toHaveClass('hidden');
     fireEvent.click(screen.getByRole('button', { name: 'Fail security check' }));
     expect(screen.getByText(/security check is unavailable/i)).toBeInTheDocument();
+    expect(screen.getByTestId('turnstile-container')).toHaveClass('hidden');
     expect(screen.getByRole('button', { name: 'Enter' })).toBeEnabled();
 
     fireEvent.change(screen.getByLabelText('Your Name'), { target: { value: 'Alex' } });

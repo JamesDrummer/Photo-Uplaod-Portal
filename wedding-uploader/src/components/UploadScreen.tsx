@@ -34,9 +34,9 @@ export function UploadScreen({ onShowGallery, uploaderName }: UploadScreenProps)
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(event.target.files ?? []);
-    setFiles(selected);
+    const { accepted, rejected } = validateSelection(selected);
+    setFiles(accepted.map(item => item.file));
     setSuccessMessage('');
-    const { rejected } = validateSelection(selected);
     setError(rejected.map(item => item.reason).join(' '));
   };
 

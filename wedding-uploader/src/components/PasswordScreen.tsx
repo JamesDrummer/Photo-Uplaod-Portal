@@ -126,7 +126,10 @@ export function PasswordScreen({ onSuccess }: PasswordScreenProps) {
         </div>
 
         {/* Turnstile CAPTCHA Widget */}
-        <div className="flex justify-center stagger-4">
+        <div
+          data-testid="turnstile-container"
+          className={`flex justify-center stagger-4${turnstileFallback ? ' hidden' : ''}`}
+        >
           <Turnstile
             sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
             onVerify={(token) => {
